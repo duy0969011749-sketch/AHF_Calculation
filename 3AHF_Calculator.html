@@ -1,0 +1,1850 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AHF Calculator - Phần mềm tính toán sóng hài</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --bg-primary: #0f1117;
+  --bg-secondary: #1a1d27;
+  --bg-tertiary: #242836;
+  --bg-card: #1e2230;
+  --border-color: #2d3348;
+  --border-accent: #6366f1;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-start: #3b82f6;
+  --accent-end: #8b5cf6;
+  --accent-glow: rgba(139,92,246,0.15);
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --input-bg: #161922;
+  --input-border: #374151;
+  --input-focus: #6366f1;
+  --table-header: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --table-row-even: #1a1e2e;
+  --table-row-odd: #161a28;
+  --scrollbar-bg: #1a1d27;
+  --scrollbar-thumb: #374151;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height:100vh;
+  line-height:1.5;
+}
+
+::-webkit-scrollbar { width:8px; height:8px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-bg); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius:4px; }
+
+.header {
+  background: linear-gradient(135deg, #1a1d27 0%, #242836 100%);
+  border-bottom: 2px solid;
+  border-image: linear-gradient(90deg, var(--accent-start), var(--accent-end)) 1;
+  padding: 16px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.header-left { display:flex; align-items:center; gap:16px; }
+.logo {
+  width:48px; height:48px;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  border-radius:12px; display:flex; align-items:center; justify-content:center;
+  font-size:22px; font-weight:800; color:#fff;
+  box-shadow: 0 4px 16px rgba(99,102,241,0.3);
+}
+.header-title h1 { font-size:20px; font-weight:700; letter-spacing:0.5px; }
+.header-title p { font-size:12px; color:var(--text-secondary); font-weight:400; }
+.header-actions { display:flex; gap:10px; align-items:center; }
+
+.btn {
+  padding:10px 30px; border-radius:5px; font-family:Arial;
+  font-size:15px; font-weight:500; cursor:pointer;
+  display:inline-flex; align-items:center; gap:6px; transition:all 0.2s;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  color:#fff; box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+}
+.btn-primary:hover { box-shadow:0 4px 16px rgba(99,102,241,0.5); transform:translateY(-1px); }
+.btn-secondary { background:var(--bg-tertiary); color:var(--text-primary); border:1px solid var(--border-color); }
+.btn-secondary:hover { border-color:var(--accent-start); }
+.btn-danger { background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); }
+.btn-danger:hover { background:rgba(239,68,68,0.25); }
+.btn-icon { width:36px; height:36px; padding:0; justify-content:center; border-radius:0px; }
+
+.lang-toggle {
+  background: var(--bg-tertiary); border:1px solid var(--border-color);
+  border-radius:5px; display:flex; overflow:hidden;
+}
+.lang-toggle button {
+  padding:10px 18px; border:none; background:transparent;
+  color:var(--text-secondary); font-family:inherit; font-size:15px;
+  font-weight:500; cursor:pointer; transition:all 0.2s;
+}
+.lang-toggle button.active {
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end)); color:#fff;
+}
+
+.main-container { max-width:2440px; margin:0 auto; padding:24px 32px; }
+
+.card {
+  background: var(--bg-card); border:1px solid var(--border-color);
+  border-radius:5px; margin-bottom:20px; overflow:hidden;
+}
+.card-header {
+  background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.04));
+  border-bottom:1px solid var(--border-color); padding:14px 20px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.card-header h2 { font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px; }
+.card-header h2 .icon { color:var(--accent-start); font-size:15px; }
+.card-body { padding:20px; }
+
+.form-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:16px; }
+.form-vertical { display:flex; flex-direction:column; gap:14px; }
+.form-group-full { display:flex; flex-direction:column; gap:6px; }
+.form-group-full label { font-size:15px; text-transform:uppercase; letter-spacing:1px; color:var(--text-secondary); font-weight:500; }
+.form-group-full input { width:100%; padding:10px 14px; background:var(--bg-tertiary); border:1px solid var(--border-color); border-radius:5px; color:var(--text-primary); font-size:14px; box-sizing:border-box; }
+/* Mục A: ô nhập hiệu ứng wave (dựa theo Uiverse.io - AbanoubMagdy1) */
+.wave-group { position:relative; display:block; padding-top:18px; }
+.wave-group .input {
+  font-size:15px; font-family:inherit; padding:10px 10px 8px 5px; display:block; width:100%;
+  border:none; border-bottom:1px solid var(--input-border); border-radius:0;
+  background:transparent; color:var(--text-primary); box-sizing:border-box; color-scheme:dark;
+}
+.wave-group .input:focus { outline:none; }
+.wave-group .label {
+  color:var(--text-secondary); font-size:15px; font-weight:500; text-transform:uppercase; letter-spacing:1px;
+  position:absolute; pointer-events:none; left:5px; top:28px; display:flex;
+}
+.wave-group .label-char { white-space:pre; transition:0.2s ease all; transition-delay:calc(var(--index) * .05s); }
+.wave-group .input:focus ~ .label .label-char,
+.wave-group .input:not(:placeholder-shown) ~ .label .label-char,
+.wave-group .input[type="date"] ~ .label .label-char {
+  transform:translateY(-24px); font-size:13px; color:var(--input-focus);
+}
+.wave-group .bar { position:relative; display:block; width:100%; }
+.wave-group .bar:before, .wave-group .bar:after {
+  content:''; height:2px; width:0; bottom:1px; position:absolute;
+  background:linear-gradient(90deg, var(--accent-start), var(--accent-end));
+  transition:0.2s ease all;
+}
+.wave-group .bar:before { left:50%; }
+.wave-group .bar:after { right:50%; }
+.wave-group .input:focus ~ .bar:before, .wave-group .input:focus ~ .bar:after { width:50%; }
+.form-group { display:flex; flex-direction:column; gap:4px; }
+.form-group label {
+  font-size:13px; font-weight:300; color:#ffffff;
+  text-transform:uppercase; letter-spacing:0.5px;
+}
+.form-group input, .form-group select {
+  background: var(--input-bg); border:1px solid var(--input-border);
+  border-radius:8px; padding:10px 14px; color:var(--text-primary);
+  font-family:inherit; font-size:15px; transition:border-color 0.2s;
+}
+.form-group input:focus, .form-group select:focus {
+  outline:none; border-color:var(--input-focus);
+  box-shadow:0 0 0 3px var(--accent-glow);
+}
+.form-group select { cursor:pointer; }
+.form-group select option { background:var(--bg-secondary); color:var(--text-primary); }
+.form-group .unit { font-size:15px; font-weight:500; color:var(--text-secondary); white-space:nowrap; padding-left:10px; display:flex; align-items:center; }
+.form-group .input-with-unit { display:flex; align-items:center; gap:0; }
+
+.checkbox-group { display:flex; flex-wrap:wrap; gap:10px; margin-top:4px; }
+.checkbox-label {
+  display:flex; align-items:center; gap:8px;
+  min-width:200px; white-space:nowrap;
+  background: var(--input-bg); border:1px solid var(--input-border);
+  border-radius:5px; padding:10px 16px; font-size:13px;
+  cursor:pointer; transition:all 0.2s;
+}
+.checkbox-label:hover { border-color:var(--accent-start); }
+.checkbox-label input[type="checkbox"] { accent-color:var(--accent-start); width:16px; height:16px; }
+.checkbox-label.checked { border-color:rgb(0,255,255); background:rgba(0,255,255,0.10); box-shadow:0 0 10px rgba(0,255,255,0.55); }
+
+.table-wrapper { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+.load-table { table-layout:fixed; }
+thead th {
+  background: var(--table-header); color:#fff; padding:10px 12px;
+  text-align:center; font-weight:600; font-size:12px;
+  white-space:normal; word-break:break-word; position:sticky; top:0;
+}
+tbody td {
+  padding:8px 10px; text-align:center;
+  border-bottom:1px solid var(--border-color); vertical-align:middle;
+  word-break:break-word;
+}
+tbody tr:nth-child(even) { background:var(--table-row-even); }
+tbody tr:nth-child(odd) { background:var(--table-row-odd); }
+tbody tr:hover { background:rgba(99,102,241,0.06); }
+tbody td input, tbody td select {
+  background:var(--input-bg); border:1px solid var(--input-border);
+  border-radius:5px; padding:6px 8px; color:var(--text-primary);
+  font-family:inherit; font-size:13px; width:100%; min-width:80px; text-align:center;
+}
+tbody td input:focus, tbody td select:focus { outline:none; border-color:var(--input-focus); }
+.td-name input { min-width:140px; text-align:left; }
+.td-actions { white-space:nowrap; }
+
+.results-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:14px; }
+.calc-table { width:100%; border-collapse:collapse; }
+.calc-table td { padding:10px 16px; border-bottom:1px solid var(--border-color); }
+.calc-table .calc-label { text-align:right; padding-right:40px; font-weight:500; color:var(--text-secondary); font-size:15px; }
+.calc-table .calc-value { text-align:right; padding-right:20px; font-weight:500; color:var(--text-primary); font-size:15px; width:150px; }
+.calc-table .calc-highlight td { background:rgba(99,102,241,0.08); }
+.calc-table .calc-highlight .calc-value { color:var(--accent-start); }
+.calc-table .calc-proposed td { background:rgba(99,102,241,0.15); }
+.calc-table .calc-proposed .calc-label { color:var(--accent-start); font-size:15px; }
+.calc-table .calc-proposed .calc-value { color:var(--accent-start); font-size:22px; }
+.calc-table tr.pass td { background:rgba(34,197,94,0.08); }
+.calc-table tr.pass .calc-value { color:#22c55e; }
+.calc-table tr.fail td { background:rgba(239,68,68,0.08); }
+.calc-table tr.fail .calc-value { color:#ef4444; }
+.result-card {
+  background: var(--bg-tertiary); border:1px solid var(--border-color);
+  border-radius:10px; padding:14px; text-align:center;
+}
+.result-card .label { font-size:11px; color:var(--text-secondary); font-weight:500; margin-bottom:4px; }
+.result-card .value { font-size:24px; font-weight:800; }
+.result-card .unit-text { font-size:11px; color:var(--text-muted); margin-top:2px; }
+.result-card.highlight {
+  border-color:var(--accent-start);
+  background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.05));
+}
+.result-card.highlight .value { color:var(--accent-start); }
+.result-card.pass .value { color:var(--success); }
+.result-card.fail .value { color:var(--danger); }
+
+.assumptions-list { display:grid; gap:6px; font-size:13px; color:var(--text-secondary); columns:2; }
+.assumptions-list li { break-inside:avoid; padding:4px 0; }
+
+.toast-wrap { position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; align-items:center; gap:10px; pointer-events:none; }
+.toast { pointer-events:auto; max-width:600px; max-height:70vh; overflow-y:auto; display:flex; align-items:flex-start; gap:16px;
+  background:linear-gradient(135deg, var(--warning), var(--danger)); color:#fff;
+  padding:14px 18px; border-radius:5px; font-size:13px; font-weight:600; line-height:1.45;
+  box-shadow:0 10px 30px rgba(0,0,0,0.45); border:1px solid rgba(255,255,255,0.18);
+  opacity:0; transform:translateY(-16px); transition:opacity .3s ease, transform .3s ease; }
+.toast.toast-success { background:linear-gradient(135deg, #22c55e, #16a34a); }
+.toast.show { opacity:1; transform:translateY(0); }
+.toast .toast-body { flex:1; }
+.toast .toast-head { font-weight:700; font-size:14px; margin-bottom:4px; }
+.toast .toast-block { margin-top:8px; }
+.toast .toast-cab { font-weight:700; }
+.toast .toast-body ul { margin:3px 0 0 18px; padding:0; }
+.toast .toast-body li { font-weight:500; padding:1px 0; }
+.toast .toast-close { cursor:pointer; flex-shrink:0; font-weight:500; padding:3px 10px;
+  border-radius:6px; background:rgba(255,255,255,0.18); transition:background .2s; }
+.toast .toast-close:hover { background:rgba(255,255,255,0.32); }
+@media print { .toast-wrap { display:none !important; } }
+.ref-table { margin-top:16px; }
+.ref-table table { font-size:12px; }
+.ref-table th { font-size:11px; padding:8px; }
+.ref-table td { padding:6px 8px; font-size:12px; }
+
+/* MSB Panel styling */
+.msb-panel {
+  background: var(--bg-card); border:1px solid var(--border-color);
+  border-radius:5px; margin-bottom:24px; overflow:hidden;
+  border-left: 3px solid var(--accent-start);
+}
+.msb-panel-header {
+  background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.06));
+  border-bottom:1px solid var(--border-color); padding:14px 20px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.msb-panel-header h2 {
+  font-size:16px; font-weight:500; display:flex; align-items:center; gap:10px;
+  color:var(--accent-start);
+}
+.msb-panel-header .msb-number {
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  color:#fff; width:40px; height:40px; border-radius:5px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; font-weight:600;
+}
+.msb-panel-body { padding:0; }
+.msb-section { padding:20px; border-bottom:1px solid var(--border-color); }
+.msb-section:last-child { border-bottom:none; }
+.msb-section-title {
+  font-size:15px; font-weight:600; color:var(--text-secondary);
+  margin-bottom:12px; text-transform:uppercase; letter-spacing:0.5px;
+  display:flex; align-items:center; gap:6px;
+}
+
+@media print {
+  body { background:#fff; color:#000; font-size:11px; }
+  .header { position:static; border-image:none; border-bottom:2px solid #6366f1; }
+  .no-print { display:none !important; }
+  .card, .msb-panel { border:1px solid #ddd; break-inside:avoid; margin-bottom:12px; }
+  .card-header, .msb-panel-header { background:#6366f1 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .card-header h2, .msb-panel-header h2 { color:#fff; }
+  thead th { background:#6366f1 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; color:#fff; }
+  tbody tr:nth-child(even) { background:#f8f8f8 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .result-card { border:1px solid #ddd; }
+  .result-card.highlight { border-color:#6366f1; }
+  input, select { border:none !important; background:transparent !important; }
+  .btn { display:none; }
+  .lang-toggle { display:none; }
+  .msb-panel { border-left:3px solid #6366f1; }
+}
+
+/* ===== BÁO CÁO XUẤT PDF (bố cục mẫu A–G) ===== */
+.report-doc { display:none; }
+body.report-mode > *:not(.report-doc) { display:none !important; }
+body.report-mode { background:#fff; }
+body.report-mode .report-doc { display:block; }
+.report-doc {
+  font-family:'Inter',Arial,sans-serif; color:#111; background:#fff;
+  max-width:1000px; margin:0 auto; padding:8px;
+}
+.report-doc .rpt-title {
+  background:linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%); color:#fff; text-align:center; font-weight:700;
+  padding:14px 10px; font-size:15px; line-height:1.45; letter-spacing:.3px;
+  border:1px solid #000000;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+.report-doc .rpt-sec {
+  background:linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%); color:#fff; font-weight:700; padding:5px 8px;
+  font-size:11px; margin-top:8px; text-transform:uppercase;
+  border:1px solid #000000; border-bottom:none; /* cạnh dưới dùng viền trên của bảng ngay bên dưới */
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+.report-doc .rpt-sec.rpt-sec-full { border-bottom:1px solid #000000; } /* mục không có bảng bên dưới */
+.report-doc table { width:100%; border-collapse:collapse; margin:0; }
+.report-doc .rpt-block table { table-layout:fixed; }
+.report-doc th, .report-doc td { border:1px solid #000000; padding:3px 6px; font-size:10.5px; vertical-align:middle; word-break:break-word; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+.report-doc thead th {
+  background:#ffffff !important; color:#000000 !important; text-align:center; font-weight:700; line-height:1.25;
+  position:static !important; top:auto !important;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+.report-doc .rpt-info td.k { background:#ffffff; font-weight:600; width:180px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+.report-doc .rpt-std td.name { background:#ffffff; font-weight:700; text-align:center; width:170px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+.report-doc ol.rpt-assum { margin:6px 0 6px 22px; padding:0; }
+.report-doc ol.rpt-assum li { padding:3px 0; font-size:10.5px; }
+.report-doc .rpt-num { text-align:right; }
+.report-doc .rpt-center { text-align:center; }
+.report-doc .rpt-total td { background:transparent; color:#fff; font-weight:700; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+.report-doc .rpt-sumlabel { text-align:right; font-weight:600; }
+.report-doc .rpt-final td { background:transparent; color:#fff; font-weight:700; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+.report-doc .rpt-block { margin-bottom:10px; }
+.report-doc .rpt-sec { break-after:avoid; page-break-after:avoid; }
+.report-doc .rpt-keep { break-inside:avoid; page-break-inside:avoid; }
+.report-doc tbody.rpt-sum { break-inside:avoid; page-break-inside:avoid; }
+.report-doc tbody tr { background:#ffffff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+.report-doc tbody tr:nth-child(even) { background:#f8f8f8 !important; }
+/* Dòng TỔNG CỘNG và Công suất AHF đề xuất: gradient chạy liền cả dòng (đặt trên tr, ô td trong suốt) */
+.report-doc tbody tr.rpt-total, .report-doc tbody tr.rpt-final {
+  background:linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%) !important;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+.report-doc .rpt-msbname { text-align:center; font-weight:700; vertical-align:top; background:#ffffff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+@media print {
+  body.report-mode .report-doc { display:block; padding:0 1px; }
+  .report-doc .rpt-pagebreak { page-break-before:always; }
+  .report-doc table, .report-doc tr { break-inside:avoid; }
+}
+/* Tự đánh số trang bằng CSS (footer giữa dưới), không cần header/footer trình duyệt */
+@page {
+  size:A4 portrait;
+  margin:10mm 10mm 14mm 10mm; /* lề trên 10mm cho mọi trang; giữ lề dưới cho footer */
+  @bottom-left { content:"Harmonic calculator tool_V1.1"; font-family:Arial, sans-serif; font-size:10px; color:#333; }
+  @bottom-right { content:"Trang " counter(page) " / " counter(pages); font-family:Arial, sans-serif; font-size:10px; color:#333; }
+}
+
+@media (max-width:768px) {
+  .header { padding:12px 16px; flex-wrap:wrap; gap:12px; }
+  .main-container { padding:16px; }
+  .form-grid { grid-template-columns:1fr; }
+  .results-grid { grid-template-columns:1fr 1fr; }
+  .assumptions-list { columns:1; }
+}
+
+/* Input validation error */
+input.input-error {
+  border-color: var(--danger) !important;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.2) !important;
+  background: rgba(239,68,68,0.15) !important;
+  color: var(--danger) !important;
+}
+input.input-error::placeholder { color: rgba(239,68,68,0.5); }
+
+/* Hide number input spinners globally */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+input[type="number"] { -moz-appearance:textfield; }
+
+/* Inline editable MSB name */
+.msb-name-editable {
+  display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+  position:relative;
+}
+.msb-name-editable .msb-name-text {
+  font-size:16px; font-weight:700; color:var(--text-primary);
+  border-bottom:1px dashed transparent; transition:border-color 0.2s;
+}
+.msb-name-editable:hover .msb-name-text { border-bottom-color:var(--accent-start); }
+.msb-name-editable .pen-icon {
+  width:18px; height:18px; opacity:0.4; transition:opacity 0.2s; flex-shrink:0;
+}
+.msb-name-editable:hover .pen-icon { opacity:1; }
+.msb-name-editable .msb-name-edit {
+  background:var(--input-bg); border:1px solid var(--accent-start);
+  border-radius:6px; padding:4px 10px; color:var(--text-primary);
+  font-family:inherit; font-size:16px; font-weight:700; width:260px;
+  outline:none; box-shadow:0 0 0 3px var(--accent-glow);
+}
+
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.card, .msb-panel { animation:fadeIn 0.3s ease-out; }
+
+/* Style ô nhập mục A (Uiverse - viền trắng, focus cyan) */
+.input-neo {
+  border:2px solid rgb(0,255,255) !important; border-radius:5px;
+  box-shadow: 0 0 10px rgba(0,255,255,0.55);
+  transition:box-shadow .1s, border-color .1s;
+}
+.input-neo:focus {
+  color: rgb(0,255,255);
+  outline-color: rgb(0,255,255);
+  box-shadow: -3px -3px 15px rgb(0,255,255);
+  border-color: rgb(0,255,255) !important;
+}
+/* Nhập sai: viền phát quang đỏ thay vì cyan */
+.input-neo.input-error {
+  border-color: rgb(255,60,60) !important;
+  box-shadow: -3px -3px 15px rgb(255,0,0) !important;
+  color: rgb(255,120,120) !important;
+}
+.input-neo.input-error:focus {
+  outline-color: rgb(255,0,0);
+  box-shadow: -3px -3px 15px rgb(255,0,0) !important;
+  border-color: rgb(255,60,60) !important;
+  color: rgb(255,120,120) !important;
+}
+
+/* ===== NEON CHECKBOX (Uiverse by 00Kubi) ===== */
+.neon-checkbox {
+  --primary: #00ffaa; --primary-dark: #00cc88; --primary-light: #88ffdd;
+  --size: 26px;
+  position: relative; display:inline-block; vertical-align:middle;
+  width: var(--size); height: var(--size); cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.neon-checkbox input { display:none !important; }
+.neon-checkbox__frame { position: relative; width: 100%; height: 100%; }
+.neon-checkbox__box { position: absolute; inset: 0; background: rgba(0,0,0,0.8); border-radius: 4px; border: 2px solid var(--primary-dark); transition: all 0.4s ease; }
+.neon-checkbox__check-container { position: absolute; inset: 2px; display: flex; align-items: center; justify-content: center; }
+.neon-checkbox__check { width: 80%; height: 80%; fill: none; stroke: var(--primary); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; transform-origin: center; transition: all 0.4s cubic-bezier(0.16,1,0.3,1); }
+.neon-checkbox__glow { position: absolute; inset: -2px; border-radius: 6px; background: var(--primary); opacity: 0; filter: blur(8px); transform: scale(1.2); transition: all 0.4s ease; }
+.neon-checkbox__borders { position: absolute; inset: 0; border-radius: 4px; overflow: hidden; }
+.neon-checkbox__borders span { position: absolute; width: 40px; height: 1px; background: var(--primary); opacity: 0; transition: opacity 0.4s ease; }
+.neon-checkbox__borders span:nth-child(1) { top: 0; left: -100%; animation: borderFlow1 2s linear infinite; }
+.neon-checkbox__borders span:nth-child(2) { top: -100%; right: 0; width: 1px; height: 40px; animation: borderFlow2 2s linear infinite; }
+.neon-checkbox__borders span:nth-child(3) { bottom: 0; right: -100%; animation: borderFlow3 2s linear infinite; }
+.neon-checkbox__borders span:nth-child(4) { bottom: -100%; left: 0; width: 1px; height: 40px; animation: borderFlow4 2s linear infinite; }
+.neon-checkbox__particles span { position: absolute; width: 4px; height: 4px; background: var(--primary); border-radius: 50%; opacity: 0; pointer-events: none; top: 50%; left: 50%; box-shadow: 0 0 6px var(--primary); }
+.neon-checkbox__rings { position: absolute; inset: -20px; pointer-events: none; }
+.neon-checkbox__rings .ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid var(--primary); opacity: 0; transform: scale(0); }
+.neon-checkbox__sparks span { position: absolute; width: 20px; height: 1px; background: linear-gradient(90deg, var(--primary), transparent); opacity: 0; }
+.neon-checkbox:hover .neon-checkbox__box { border-color: var(--primary); transform: scale(1.05); }
+.neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__box { border-color: var(--primary); background: rgba(0,255,170,0.1); }
+.neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__check { stroke-dashoffset: 0; transform: scale(1.1); }
+.neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__glow { opacity: 0.2; }
+.neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__borders span { opacity: 1; }
+.neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__particles span { animation: particleExplosion 0.6s ease-out forwards; }
+.neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__rings .ring { animation: ringPulse 0.6s ease-out forwards; }
+.neon-checkbox input:checked ~ .neon-checkbox__frame .neon-checkbox__sparks span { animation: sparkFlash 0.6s ease-out forwards; }
+@keyframes borderFlow1 { 0%{transform:translateX(0)} 100%{transform:translateX(200%)} }
+@keyframes borderFlow2 { 0%{transform:translateY(0)} 100%{transform:translateY(200%)} }
+@keyframes borderFlow3 { 0%{transform:translateX(0)} 100%{transform:translateX(-200%)} }
+@keyframes borderFlow4 { 0%{transform:translateY(0)} 100%{transform:translateY(-200%)} }
+@keyframes particleExplosion { 0%{transform:translate(-50%,-50%) scale(1);opacity:0} 20%{opacity:1} 100%{transform:translate(calc(-50% + var(--x,20px)),calc(-50% + var(--y,20px))) scale(0);opacity:0} }
+@keyframes ringPulse { 0%{transform:scale(0);opacity:1} 100%{transform:scale(2);opacity:0} }
+@keyframes sparkFlash { 0%{transform:rotate(var(--r,0deg)) translateX(0) scale(1);opacity:1} 100%{transform:rotate(var(--r,0deg)) translateX(30px) scale(0);opacity:0} }
+.neon-checkbox__particles span:nth-child(1){--x:25px;--y:-25px}
+.neon-checkbox__particles span:nth-child(2){--x:-25px;--y:-25px}
+.neon-checkbox__particles span:nth-child(3){--x:25px;--y:25px}
+.neon-checkbox__particles span:nth-child(4){--x:-25px;--y:25px}
+.neon-checkbox__particles span:nth-child(5){--x:35px;--y:0px}
+.neon-checkbox__particles span:nth-child(6){--x:-35px;--y:0px}
+.neon-checkbox__particles span:nth-child(7){--x:0px;--y:35px}
+.neon-checkbox__particles span:nth-child(8){--x:0px;--y:-35px}
+.neon-checkbox__particles span:nth-child(9){--x:20px;--y:-30px}
+.neon-checkbox__particles span:nth-child(10){--x:-20px;--y:30px}
+.neon-checkbox__particles span:nth-child(11){--x:30px;--y:20px}
+.neon-checkbox__particles span:nth-child(12){--x:-30px;--y:-20px}
+.neon-checkbox__sparks span:nth-child(1){--r:0deg;top:50%;left:50%}
+.neon-checkbox__sparks span:nth-child(2){--r:90deg;top:50%;left:50%}
+.neon-checkbox__sparks span:nth-child(3){--r:180deg;top:50%;left:50%}
+.neon-checkbox__sparks span:nth-child(4){--r:270deg;top:50%;left:50%}
+.neon-checkbox__rings .ring:nth-child(1){animation-delay:0s}
+.neon-checkbox__rings .ring:nth-child(2){animation-delay:0.1s}
+.neon-checkbox__rings .ring:nth-child(3){animation-delay:0.2s}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left" style="margin-left: 300px;">
+    <div class="header-title">
+      <h1 id="headerTitle" data-i18n="headerTitle">TÍNH TOÁN SÓNG HÀI & ĐỀ XUẤT BỘ LỌC HÀI CHỦ ĐỘNG AHF</h1>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div class="lang-toggle no-print">
+      <button id="btnVI" class="active" onclick="setLang('vi')">VI</button>
+      <button id="btnEN" onclick="setLang('en')">EN</button>
+    </div>
+    <button class="btn btn-secondary no-print" onclick="checkData()">
+      <span data-i18n="checkData">Kiểm tra</span>
+    </button>
+    <button class="btn btn-secondary no-print" onclick="resetAll()">
+      <span>↺</span> <span data-i18n="reset">Đặt lại</span>
+    </button>
+    <button class="btn btn-primary no-print" onclick="exportReport()">
+      <span></span> <span data-i18n="exportPDF">Xuất PDF</span>
+    </button>
+  </div>
+</div>
+
+<div class="main-container">
+
+  <!-- PROJECT INFO -->
+  <div class="card">
+    <div class="card-header">
+      <h2><span data-i18n="projectInfo">THÔNG TIN DỰ ÁN</span></h2>
+    </div>
+    <div class="card-body">
+      <div class="form-vertical">
+        <div class="wave-group">
+          <input type="text" id="projectName" class="input" placeholder=" ">
+          <span class="bar"></span>
+          <label class="label" for="projectName" data-i18n="projectName">Tên dự án</label>
+        </div>
+        <div class="wave-group">
+          <input type="text" id="projectLocation" class="input" placeholder=" ">
+          <span class="bar"></span>
+          <label class="label" for="projectLocation" data-i18n="location">Địa điểm</label>
+        </div>
+        <div class="wave-group">
+          <input type="text" id="projectInvestor" class="input" placeholder=" ">
+          <span class="bar"></span>
+          <label class="label" for="projectInvestor" data-i18n="investor">Chủ đầu tư</label>
+        </div>
+        <div class="wave-group">
+          <input type="text" id="projectAuthor" class="input" placeholder=" ">
+          <span class="bar"></span>
+          <label class="label" for="projectAuthor" data-i18n="author">Người lập</label>
+        </div>
+        <div class="wave-group">
+          <input type="date" id="projectDate" class="input">
+          <span class="bar"></span>
+          <label class="label" for="projectDate" data-i18n="date">Ngày lập</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STANDARD & FUNCTION — NOW BEFORE MSB -->
+  <div class="card">
+    <div class="card-header">
+      <h2><span data-i18n="standardFunc">TIÊU CHUẨN & CHỨC NĂNG</span></h2>
+    </div>
+    <div class="card-body">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="form-group">
+          <label data-i18n="standardApply">Chọn tiêu chuẩn áp dụng</label>
+          <div class="checkbox-group" id="standardCheckboxes">
+            <label class="checkbox-label checked" onclick="toggleCheck(this)">
+              <span class="neon-checkbox"><input type="checkbox" value="IEEE519" checked onchange="calculateAll()"><div class="neon-checkbox__frame"><div class="neon-checkbox__box"><div class="neon-checkbox__check-container"><svg viewBox="0 0 24 24" class="neon-checkbox__check"><path d="M3,12.5l7,7L21,5"></path></svg></div><div class="neon-checkbox__glow"></div><div class="neon-checkbox__borders"><span></span><span></span><span></span><span></span></div></div><div class="neon-checkbox__effects"><div class="neon-checkbox__particles"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="neon-checkbox__rings"><div class="ring"></div><div class="ring"></div><div class="ring"></div></div><div class="neon-checkbox__sparks"><span></span><span></span><span></span><span></span></div></div></div></span>
+              <span>IEEE 519</span>
+            </label>
+            <label class="checkbox-label" onclick="toggleCheck(this)">
+              <span class="neon-checkbox"><input type="checkbox" value="TT05" onchange="calculateAll()"><div class="neon-checkbox__frame"><div class="neon-checkbox__box"><div class="neon-checkbox__check-container"><svg viewBox="0 0 24 24" class="neon-checkbox__check"><path d="M3,12.5l7,7L21,5"></path></svg></div><div class="neon-checkbox__glow"></div><div class="neon-checkbox__borders"><span></span><span></span><span></span><span></span></div></div><div class="neon-checkbox__effects"><div class="neon-checkbox__particles"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="neon-checkbox__rings"><div class="ring"></div><div class="ring"></div><div class="ring"></div></div><div class="neon-checkbox__sparks"><span></span><span></span><span></span><span></span></div></div></div></span>
+              <span data-i18n="tt05Name">TT 05/2025-BCT</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label data-i18n="filterFunc">Chức năng bộ lọc</label>
+          <div class="checkbox-group" id="funcCheckboxes">
+            <label class="checkbox-label checked" onclick="toggleCheck(this)">
+              <span class="neon-checkbox"><input type="checkbox" value="harmonic" checked onchange="calculateAll()"><div class="neon-checkbox__frame"><div class="neon-checkbox__box"><div class="neon-checkbox__check-container"><svg viewBox="0 0 24 24" class="neon-checkbox__check"><path d="M3,12.5l7,7L21,5"></path></svg></div><div class="neon-checkbox__glow"></div><div class="neon-checkbox__borders"><span></span><span></span><span></span><span></span></div></div><div class="neon-checkbox__effects"><div class="neon-checkbox__particles"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="neon-checkbox__rings"><div class="ring"></div><div class="ring"></div><div class="ring"></div></div><div class="neon-checkbox__sparks"><span></span><span></span><span></span><span></span></div></div></div></span>
+              <span data-i18n="funcHarmonic">Lọc hài</span>
+            </label>
+            <label class="checkbox-label" onclick="toggleCheck(this)">
+              <span class="neon-checkbox"><input type="checkbox" value="pf" onchange="calculateAll()"><div class="neon-checkbox__frame"><div class="neon-checkbox__box"><div class="neon-checkbox__check-container"><svg viewBox="0 0 24 24" class="neon-checkbox__check"><path d="M3,12.5l7,7L21,5"></path></svg></div><div class="neon-checkbox__glow"></div><div class="neon-checkbox__borders"><span></span><span></span><span></span><span></span></div></div><div class="neon-checkbox__effects"><div class="neon-checkbox__particles"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="neon-checkbox__rings"><div class="ring"></div><div class="ring"></div><div class="ring"></div></div><div class="neon-checkbox__sparks"><span></span><span></span><span></span><span></span></div></div></div></span>
+              <span data-i18n="funcPF">Điều chỉnh hệ số P.F</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MSB PANELS CONTAINER -->
+  <div id="msbContainer"></div>
+
+  <!-- ADD MSB BUTTON -->
+  <div style="text-align:center;margin-bottom:24px;" class="no-print">
+    <button class="btn btn-primary" onclick="addMSB()" style="padding:12px 28px;font-size:14px;">
+      <span>＋</span> <span data-i18n="addMSB">Thêm tủ MSB</span>
+    </button>
+  </div>
+
+  <!-- ASSUMPTIONS -->
+  <div class="card">
+    <div class="card-header">
+      <h2><span data-i18n="assumptions">GIẢ ĐỊNH TÍNH TOÁN</span></h2>
+    </div>
+    <div class="card-body">
+      <ol class="assumptions-list" id="assumptionsList"></ol>
+    </div>
+  </div>
+
+  <!-- IEEE 519 REFERENCE -->
+  <div class="card ref-table">
+    <div class="card-header">
+      <h2><span data-i18n="refIEEE">BẢNG THAM CHIẾU IEEE-519 (120V – 69kV)</span></h2>
+    </div>
+    <div class="card-body" style="padding:12px;">
+      <table>
+        <thead><tr>
+          <th>Isc/IL</th>
+          <th data-i18n="oddH1">Hài bậc lẻ 3≤h&lt;11</th>
+          <th>11≤h&lt;17</th><th>17≤h&lt;23</th><th>23≤h&lt;35</th><th>35≤h</th><th>TDD</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>&lt;20</td><td>4.0%</td><td>2.0%</td><td>1.5%</td><td>0.6%</td><td>0.3%</td><td>5.0%</td></tr>
+          <tr><td>20–50</td><td>7.0%</td><td>3.5%</td><td>2.5%</td><td>1.0%</td><td>0.5%</td><td>8.0%</td></tr>
+          <tr><td>50–100</td><td>10.0%</td><td>4.5%</td><td>4.0%</td><td>1.5%</td><td>0.7%</td><td>12.0%</td></tr>
+          <tr><td>100–1000</td><td>12.0%</td><td>5.5%</td><td>5.0%</td><td>2.0%</td><td>1.0%</td><td>15.0%</td></tr>
+          <tr><td>&gt;1000</td><td>15.0%</td><td>7.0%</td><td>6.0%</td><td>2.5%</td><td>1.4%</td><td>20.0%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TT 05/2025 REFERENCE -->
+  <div class="card ref-table" id="tt05RefCard">
+    <div class="card-header">
+      <h2><span data-i18n="refTT05">BẢNG THAM CHIẾU TT 05/2025-BCT</span></h2>
+    </div>
+    <div class="card-body" style="padding:12px;">
+      <table>
+        <thead><tr>
+          <th data-i18n="voltageLevel">Cấp điện áp</th>
+          <th data-i18n="thdvTotal">Tổng biến dạng</th>
+          <th data-i18n="thdvComponent">Biến dạng riêng lẻ</th>
+        </tr></thead>
+        <tbody>
+          <tr><td data-i18n="vl110">110 kV</td><td>4%</td><td>3,5%</td></tr>
+          <tr><td data-i18n="vlMed">Trung áp</td><td>8%</td><td>7%</td></tr>
+          <tr><td data-i18n="vlLow">Hạ áp</td><td data-i18n="lowTotal">12% nếu phụ tải ≥ 50 kW; 20% nếu phụ tải &lt; 50 kW</td><td data-i18n="lowComp">10% nếu phụ tải ≥ 50 kW; 15% nếu phụ tải &lt; 50 kW</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+</div>
+
+<div id="reportView" class="report-doc"></div>
+
+<script>
+// ===== DATA =====
+const LOAD_TYPES = {
+  'ELEC_16A':  {vi:'Thiết bị điện tử, dòng mỗi pha < 16A',en:'Electronic equipment, current per phase < 16A',thdi:0.19,ref:'IEC TR 61000-3-14 Class A',hasPulse:false},
+  'LIGHT_25W': {vi:'Thiết bị chiếu sáng > 25W, Pf = 0.9',en:'Lighting equipment > 25W, Pf = 0.9',thdi:0.3483,ref:'IEC TR 61000-3-14 Class C',hasPulse:false},
+  'RECT_6':    {vi:'Rectifier/ASD/VFD/Chargers 6-Pulse',en:'Rectifier/ASD/VFD/Chargers 6-Pulse',thdi:0.2998,ref:'IEEE 3002.8',hasPulse:false},
+  'RECT_12':   {vi:'Rectifier/ASD/VFD/Chargers 12-Pulse',en:'Rectifier/ASD/VFD/Chargers 12-Pulse',thdi:0.1418,ref:'IEEE 3002.8',hasPulse:false},
+  'RECT_18':   {vi:'Rectifier/ASD/VFD/Chargers 18-Pulse',en:'Rectifier/ASD/VFD/Chargers 18-Pulse',thdi:0.0882,ref:'IEEE 3002.8',hasPulse:false},
+  'RECT_24':   {vi:'Rectifier/ASD/VFD/Chargers 24-Pulse',en:'Rectifier/ASD/VFD/Chargers 24-Pulse',thdi:0.0661,ref:'IEEE 3002.8',hasPulse:false},
+  'MOTOR':     {vi:'Động cơ DOL/Soft Starter/SDS',en:'Motor DOL/Soft Starter/SDS',thdi:0,ref:'—',hasPulse:false},
+};
+
+const IEEE519_TDD = [
+  {min:0,max:20,tdd:5.0},{min:20,max:50,tdd:8.0},{min:50,max:100,tdd:12.0},
+  {min:100,max:1000,tdd:15.0},{min:1000,max:Infinity,tdd:20.0},
+];
+
+// ===== STATE =====
+let currentLang = 'vi';
+let msbList = []; // Array of MSB objects
+let msbIdCounter = 0;
+let msbCalc = {}; // Lưu kết quả tính theo từng tủ (iscIl, tddLimit, bucket) cho phần giả định động
+let incompleteMsbNames = []; // Danh sách tủ thiếu dữ liệu (cập nhật mỗi lần tính), dùng cho nút Kiểm tra
+
+// ===== i18n =====
+const i18n = {
+  vi: {
+    headerTitle:'TÍNH TOÁN SÓNG HÀI & ĐỀ XUẤT BỘ LỌC HÀI CHỦ ĐỘNG AHF',
+    pageTitle:'AHF Calculator - Phần mềm tính toán sóng hài',
+    tt05Name:'TT 05/2025-BCT',
+    reset:'Đặt lại', exportPDF:'Xuất PDF', checkData:'Kiểm tra',
+    projectInfo:'A. THÔNG TIN DỰ ÁN', projectName:'1. Tên dự án', location:'2. Địa điểm',
+    investor:'3. Khách hàng', date:'5. Ngày lập', author:'4.Người lập', revision:'Phiên bản',
+    standardFunc:'B. TIÊU CHUẨN & CHỨC NĂNG',
+    standardApply:'1. Chọn tiêu chuẩn áp dụng',
+    filterFunc:'2. Chức năng bộ lọc',
+    funcHarmonic:'Lọc hài', funcPF:'Điều chỉnh hệ số P.F', funcBalance:'Cân bằng pha',
+    addMSB:'Thêm tủ MSB', removeMSB:'XÓA TỦ',
+    msbInfo:'THÔNG TIN TỦ MSB', msbName:'Tên tủ MSB',
+    mainCBRating:'1. Dòng định mức ACB/MCCB tổng (In)', shortCircuit:'2. Dòng ngắn mạch (Isc)',
+    systemVoltage:'3. Điện áp hệ thống',
+    maxLoadRatio:'4. Dòng điện tải lớn nhất so với CB bảo vệ',
+    capBankPower:'5. Công suất tụ bù (kVAr)', capBankCurrent:'Dòng điện tụ bù (A) – tự tính',
+    loadTable:'BẢNG DANH MỤC TẢI', addLoad:'Thêm tải',
+    thLoadName:'TÊN TỦ ĐIỆN /<br>THIẾT BỊ', thDeviceName:'LOẠI THIẾT BỊ', thLoadType:'Loại tải',
+    thCBRating:'ACB/MCCB/MCB (A)',
+    thImax:'I_max (A)', thTHDi:'TDD%', thRefStandard:'Tiêu chuẩn', thHarmonicCurrent:'Dòng hài (A)',
+    totalHarmonic:'Tổng dòng điện hài (A):', totalLoadCurrent:'Tổng dòng tải (A):',
+    calcResults:'KẾT QUẢ TÍNH TOÁN',
+    iscIl:'Isc / IL', actualTDD:'%TDD thực tế', tddLimit:'Giới hạn TDD (IEEE-519)',
+    tddStatus:'Trạng thái TDD', tt05Status:'THDv (TT 05/2025-BCT)',
+    harmonicToRemove:'% Hài cần loại bỏ', currentToRemove:'Dòng hài cần loại bỏ',
+    ahfRecommended:'AHF khuyến cáo', ahfWithReserve:'+ Dự phòng 10%',
+    ahfProposed:'AHF ĐỀ XUẤT (làm tròn)',
+    rTotalHarmonic:'Tổng dòng điện hài lớn nhất [ΣIhài] (A)',
+    rTotalLoad:'Tổng dòng tải lớn nhất [IL] (A)',
+    rMainCB:'Dòng định mức ACB/MCCB tổng [In] (A)',
+    rAdjHarmonic:'Mức hài thực tế có thể có (A)  [= Σhài × I_ACB / Σtải]',
+    rIscIl:'Tỷ số Isc / IL',
+    rActualTDD:'%TDD lớn nhất [ΣIhài/IL×100]',
+    rTddLimitIEEE:'%TDD cho phép theo IEEE-519',
+    rTddLimitTT05:'%TDD cho phép theo TT05/2025-BCT',
+    rTddLimitBoth:'%TDD cho phép theo IEEE-519 và TT05/2025-BCT',
+    rTddStatus:'Trạng thái đánh giá',
+    rTt05Status:'THDv ước tính (TT 05/2025-BCT)',
+    rHarmonicPct:'% Sóng hài cần loại bỏ để đạt',
+    rLoadKW:'Công suất phụ tải ước tính (kW) [P = √3·U·IL·0.9]',
+    rHarmonicAmp:'Dòng hài cần loại bỏ (A)',
+    rCapKvar:'5. Công suất tụ bù (kVAr) – nhập thực tế',
+    rCapCurrent:'Dòng điện tụ bù (A)  [= kVAr / (√3 × U)]',
+    rAhfRecommended:'Công suất AHF khuyến cáo (A)  [√(I²_hài + I²_tụbù)]',
+    rAhfReserve:'Dự phòng',
+    rAhfProposed:'CÔNG SUẤT AHF ĐỀ XUẤT',
+    funcSummaryTitle:'CHỨC NĂNG CỦA AHF',
+    assumptions:'C. GIẢ ĐỊNH TÍNH TOÁN',
+    assum1:'Thiết bị điện tử, dòng mỗi pha < 16A có TDD ≤ 19% (tham chiếu IEC TR 61000-3-14 Class A)',
+    assum2:'Thiết bị chiếu sáng > 25W, Pf = 0.9 có TDD ≤ 34.83% (tham chiếu IEC TR 61000-3-14 Class C)',
+    assum3:'Rectifier/ASD/VFD/Chargers 6-Pulse có TDD ≤ 29.98% (tham chiếu IEEE 3002.8)',
+    assum4:'Rectifier/ASD/VFD/Chargers 12-Pulse có TDD ≤ 14.18% (tham chiếu IEEE 3002.8)',
+    assum5:'Rectifier/ASD/VFD/Chargers 18-Pulse có TDD ≤ 8.82% (tham chiếu IEEE 3002.8)',
+    assum6:'Rectifier/ASD/VFD/Chargers 24-Pulse có TDD ≤ 6.61% (tham chiếu IEEE 3002.8)',
+    assum7:'Động cơ DOL/Soft Starter/SDS và thiết bị chữa cháy không gây ra sóng hài',
+    assum8:'Dòng điện tải lớn nhất = % cấu hình tại mỗi tủ (mặc định 80%) so với dòng định mức ACB/MCCB/MCB bảo vệ.',
+    assum9:'Giới hạn TDD ≤ 8% theo IEEE-519 (120V–69kV, Isc/IL = 20–50)',
+    assum10:'Công suất AHF bao gồm thành phần bù tụ bù và dự phòng 10%',
+    refIEEE:'D. BẢNG THAM CHIẾU IEEE-519 (120V – 69kV)',
+    refTT05:'E. BẢNG THAM CHIẾU TT 05/2025-BCT',
+    tt05Caption:'Biến dạng sóng hài dòng điện tối đa cho phép đối với phụ tải điện',
+    voltageLevel:'Cấp điện áp', thdvTotal:'Tổng biến dạng', thdvComponent:'Biến dạng riêng lẻ',
+    vl110:'110 kV', vlMed:'Trung áp', vlLow:'Hạ áp',
+    lowTotal:'12% nếu phụ tải ≥ 50 kW; 20% nếu phụ tải < 50 kW',
+    lowComp:'10% nếu phụ tải ≥ 50 kW; 15% nếu phụ tải < 50 kW',
+    lowVoltage:'Hạ áp (< 1 kV)', medVoltage:'Trung áp (1–35 kV)',
+    oddH1:'Hài bậc lẻ 3≤h<11',
+    colorNote:'CHÚ THÍCH MÀU SẮC',
+    colorInput:'Ô nhập liệu – Người dùng nhập số liệu',
+    colorCalc:'Ô tính toán (công thức tự động)',
+    colorPass:'Kết quả ĐẠT yêu cầu tiêu chuẩn',
+    colorFail:'Kết quả KHÔNG ĐẠT – cần lắp AHF',
+    pass:'ĐẠT', fail:'KHÔNG ĐẠT',
+    funcHarmonicDesc:'Lọc sóng hài (Harmonic Filtering)',
+    funcPFDesc:'Điều chỉnh hệ số công suất (PF Correction)',
+    funcBalanceDesc:'Cân bằng pha (Phase Balancing)',
+    noteNeedAHF:'%TDD thực tế vượt giới hạn → Cần lắp đặt AHF',
+    noteNoNeed:'Hệ thống đạt tiêu chuẩn, không bắt buộc lắp AHF.',
+    selectType:'-- Chọn loại tải --',
+    confirmRemoveMSB:'Bạn có chắc muốn xóa tủ MSB này?',
+    cannotRemoveLast:'Phải có ít nhất 1 tủ MSB!',
+    sectionMSBParams:'Thông số tủ điện MSB',
+    sectionLoads:'Danh mục tải',
+    sectionResults:'Kết quả tính toán',
+    sectionCapBank:'Tụ bù công suất',
+  },
+  en: {
+    headerTitle:'HARMONIC ANALYSIS & ACTIVE HARMONIC FILTER SIZING',
+    pageTitle:'AHF Calculator - Harmonic calculation software',
+    tt05Name:'Circular 05/2025/TT-BCT',
+    headerSub:'AHF Sizing Calculator',
+    reset:'Reset', exportPDF:'Export PDF', checkData:'Check',
+    projectInfo:'A. PROJECT INFORMATION', projectName:'1. Project Name', location:'2. Location',
+    investor:'3. Client', date:'5. Date', author:'4. Prepared by', revision:'Revision',
+    standardFunc:'B. STANDARDS & FUNCTIONS',
+    standardApply:'1. Applied Standards',
+    filterFunc:'2. Filter Functions',
+    funcHarmonic:'Harmonic Filtering', funcPF:'Power Factor Correction', funcBalance:'Phase Balancing',
+    addMSB:'Add MSB Panel', removeMSB:'Remove MSB',
+    msbInfo:'MSB PANEL INFORMATION', msbName:'MSB Panel Name',
+    mainCBRating:'1. Main ACB/MCCB Rated Current', shortCircuit:'2. Short Circuit Current (Isc)',
+    systemVoltage:'3. System Voltage',
+    maxLoadRatio:'4. Max load current vs protective CB',
+    capBankPower:'5. Capacitor Bank (kVAr)', capBankCurrent:'Cap. Bank Current (A) – auto',
+    loadTable:'LOAD SCHEDULE', addLoad:'Add Load',
+    thLoadName:'PANEL /<br>EQUIPMENT NAME', thDeviceName:'EQUIPMENT TYPE', thLoadType:'LOAD TYPE',
+    thCBRating:'ACB/MCCB/MCB (A)',
+    thImax:'I_max (A)', thTHDi:'TDD%', thRefStandard:'Ref. Std', thHarmonicCurrent:'Harmonic (A)',
+    totalHarmonic:'Total Harmonic Current (A):', totalLoadCurrent:'Total Max Load Current (A):',
+    calcResults:'CALCULATION RESULTS',
+    iscIl:'Isc / IL', actualTDD:'Actual %TDD', tddLimit:'TDD Limit (IEEE-519)',
+    tddStatus:'TDD Status', tt05Status:'THDv (Circular 05/2025/TT-BCT)',
+    harmonicToRemove:'% Harmonic to Remove', currentToRemove:'Current to Remove',
+    ahfRecommended:'Recommended AHF', ahfWithReserve:'+ 10% spare.',
+    ahfProposed:'PROPOSED AHF (rounded)',
+    rTotalHarmonic:'Total Harmonic Current (A)',
+    rTotalLoad:'Total Load Current (A)',
+    rMainCB:'1. Main ACB/MCCB Rated Current [In] (A)',
+    rAdjHarmonic:'Actual Harmonic Level (A)  [= Σharm × I_ACB / Σload]',
+    rIscIl:'Isc / IL Ratio',
+    rActualTDD:'Max %TDD [ΣIharm/IL×100]',
+    rTddLimitIEEE:'Allowable %TDD per IEEE-519',
+    rTddLimitTT05:'Allowable %TDD per Circular 05/2025/TT-BCT',
+    rTddLimitBoth:'Allowable %TDD per IEEE-519 & Circular 05/2025/TT-BCT',
+    rTddStatus:'Evaluation Status',
+    rTt05Status:'Estimated THDv (Circular 05/2025/TT-BCT)',
+    rHarmonicPct:'% Harmonic to Remove for',
+    rLoadKW:'Estimated load power (kW) [P = √3·U·IL·0.9]',
+    rHarmonicAmp:'Harmonic Current to Remove (A)',
+    rCapKvar:'Capacitor Bank Power (kVAr) – actual',
+    rCapCurrent:'Capacitor Bank Current (A)  [= kVAr / (√3 × U)]',
+    rAhfRecommended:'Recommended AHF Capacity (A)  [√(I²_harm + I²_cap)]',
+    rAhfReserve:'Reserve',
+    rAhfProposed:'PROPOSED AHF CAPACITY',
+    funcSummaryTitle:'AHF FUNCTIONS',
+    assumptions:'C. CALCULATION ASSUMPTIONS',
+    assum1:'Electronic equipment, current per phase < 16A TDD ≤ 19% (ref: IEC TR 61000-3-14 Class A)',
+    assum2:'Lighting equipment > 25W, Pf = 0.9 TDD ≤ 34.83% (ref: IEC TR 61000-3-14 Class C)',
+    assum3:'Rectifier/ASD/VFD/Chargers 6-Pulse TDD ≤ 29.98% (ref: IEEE 3002.8)',
+    assum4:'Rectifier/ASD/VFD/Chargers 12-Pulse TDD ≤ 14.18% (ref: IEEE 3002.8)',
+    assum5:'Rectifier/ASD/VFD/Chargers 18-Pulse TDD ≤ 8.82% (ref: IEEE 3002.8)',
+    assum6:'Rectifier/ASD/VFD/Chargers 24-Pulse TDD ≤ 6.61% (ref: IEEE 3002.8)',
+    assum7:'Motor DOL/Soft Starter/SDS and fire protection equipment excluded from harmonic calc',
+    assum8:'Load max current = configurable % per panel (default 80%) of the protective ACB/MCCB/MCB rated current.',
+    assum9:'TDD limit ≤ 8% per IEEE-519 (120V–69kV, Isc/IL = 20–50)',
+    assum10:'AHF capacity includes cap. bank compensation and 10% spare',
+    refIEEE:'D. IEEE-519 REFERENCE TABLE (120V – 69kV)',
+    refTT05:'E. CIRCULAR 05/2025/TT-BCT REFERENCE TABLE',
+    tt05Caption:'Maximum allowable current harmonic distortion for electrical loads',
+    voltageLevel:'Voltage Level', thdvTotal:'Total distortion', thdvComponent:'Individual distortion',
+    vl110:'110 kV', vlMed:'Medium voltage', vlLow:'Low voltage',
+    lowTotal:'12% if load ≥ 50 kW; 20% if load < 50 kW',
+    lowComp:'10% if load ≥ 50 kW; 15% if load < 50 kW',
+    lowVoltage:'Low Voltage (< 1 kV)', medVoltage:'Medium Voltage (1–35 kV)',
+    oddH1:'Odd Harmonics 3≤h<11',
+    colorNote:'COLOR LEGEND',
+    colorInput:'Input cells – User data entry',
+    colorCalc:'Calculated cells (auto formula)',
+    colorPass:'PASS – Meets standard',
+    colorFail:'FAIL – AHF required',
+    pass:'PASS', fail:'FAIL',
+    funcHarmonicDesc:'Harmonic Filtering',
+    funcPFDesc:'Power Factor Correction',
+    funcBalanceDesc:'Phase Balancing',
+    noteNeedAHF:'Actual %TDD exceeds limit → AHF installation required',
+    noteNoNeed:'System meets standards, AHF not mandatory.',
+    selectType:'-- Select load type --',
+    confirmRemoveMSB:'Are you sure you want to remove this MSB panel?',
+    cannotRemoveLast:'Must have at least 1 MSB panel!',
+    sectionMSBParams:'Panel Parameters',
+    sectionLoads:'Load Schedule',
+    sectionResults:'Calculation Results',
+    sectionCapBank:'Capacitor Bank',
+  }
+};
+
+function T(key) { return i18n[currentLang][key] || key; }
+
+// ===== LANG =====
+function setLang(lang) {
+  currentLang = lang;
+  try { localStorage.setItem('ahfLang', lang); } catch (e) {} // ghi nhớ ngôn ngữ cho lần mở sau
+  if (i18n[lang].pageTitle) document.title = i18n[lang].pageTitle;
+  document.getElementById('btnVI').classList.toggle('active', lang==='vi');
+  document.getElementById('btnEN').classList.toggle('active', lang==='en');
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    if (i18n[lang][k]) el.textContent = i18n[lang][k];
+  });
+  waveSplitLabels();
+  // Re-render all MSBs to update dynamic i18n
+  renderAllMSBs();
+}
+
+// Tên tiêu chuẩn đang áp dụng để tính % sóng hài cần loại bỏ
+function stdLabel(lang) {
+  const ie = document.querySelector('#standardCheckboxes input[value="IEEE519"]')?.checked;
+  const tt = document.querySelector('#standardCheckboxes input[value="TT05"]')?.checked;
+  if (ie && tt) return lang === 'en' ? 'IEEE-519 & Circular 05/2025/TT-BCT' : 'IEEE-519 và TT 05/2025-BCT';
+  if (tt) return lang === 'en' ? 'Circular 05/2025/TT-BCT' : 'TT 05/2025-BCT';
+  return 'IEEE-519';
+}
+
+// Mục A: tách nhãn thành từng chữ cái để chạy hiệu ứng bay lên lần lượt
+function waveSplitLabels() {
+  document.querySelectorAll('.wave-group .label').forEach(lb => {
+    const txt = lb.textContent;
+    lb.textContent = '';
+    [...txt].forEach((ch, i) => {
+      const s = document.createElement('span');
+      s.className = 'label-char';
+      s.style.setProperty('--index', i);
+      s.textContent = ch;
+      lb.appendChild(s);
+    });
+  });
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', waveSplitLabels);
+else waveSplitLabels();
+
+function toggleCheck(label) {
+  setTimeout(() => {
+    const cb = label.querySelector('input[type="checkbox"]');
+    label.classList.toggle('checked', cb.checked);
+    renderAllMSBs();
+  }, 10);
+}
+
+// ===== MSB MANAGEMENT =====
+function addMSB(data) {
+  msbIdCounter++;
+  const msb = {
+    id: msbIdCounter,
+    name: data?.name || 'MSB ' + msbIdCounter,
+    mainCB: data?.mainCB || '',
+    isc: data?.isc || '',
+    voltage: data?.voltage || 400,
+    imaxPct: data?.imaxPct ?? 80,
+    capKvar: data?.capKvar || '',
+    loads: data?.loads || [],
+    loadIdCounter: 0,
+  };
+  msbList.push(msb);
+  renderAllMSBs();
+  return msb;
+}
+
+function removeMSB(msbId) {
+  if (msbList.length <= 1) {
+    alert(T('cannotRemoveLast'));
+    return;
+  }
+  if (!confirm(T('confirmRemoveMSB'))) return;
+  msbList = msbList.filter(m => m.id !== msbId);
+  renderAllMSBs();
+}
+
+function getMSB(id) { return msbList.find(m => m.id === id); }
+
+// ===== RENDER (structure only — called on add/remove/lang/type change) =====
+function renderAllMSBs() {
+  const container = document.getElementById('msbContainer');
+  saveAllInputs();
+  const pfChecked = document.querySelector('#funcCheckboxes input[value="pf"]')?.checked;
+  const ieee519On = document.querySelector('#standardCheckboxes input[value="IEEE519"]')?.checked;
+  const tt05On = document.querySelector('#standardCheckboxes input[value="TT05"]')?.checked;
+
+  let html = '';
+  msbList.forEach((msb, idx) => {
+    const M = msb.id;
+    const msbNum = idx + 1;
+
+    html += `<div class="msb-panel" id="msb_${M}">`;
+    html += `<div class="msb-panel-header">
+      <h2>
+        <span class="msb-number">${msbNum}</span>
+        <span class="msb-name-editable" onclick="startEditMsbName(${M}, this)" id="msbNameWrap_${M}">
+          <span class="msb-name-text">${escHtml(msb.name)}</span>
+          <svg class="pen-icon no-print" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+        </span>
+      </h2>
+      <div class="no-print" style="display:flex;gap:8px;">
+        <button class="btn btn-danger" onclick="removeMSB(${M})" title="${T('removeMSB')}">✕ <span>${T('removeMSB')}</span></button>
+      </div>
+    </div>`;
+    html += `<div class="msb-panel-body">`;
+
+    // MSB Parameters
+    html += `<div class="msb-section">
+      <div class="msb-section-title"> ${T('sectionMSBParams')}</div>
+      <div class="form-grid" style="grid-template-columns:repeat(4, minmax(300px, 330px)); margin-right:auto;">
+        <div class="form-group"><label>${T('mainCBRating')}</label>
+          <div class="input-with-unit"><input type="text" inputmode="numeric" class="msb-maincb-input input-neo" value="${escHtml(msb.mainCB)}" oninput="validateNumInput(this); recalculate()" placeholder="" style="flex:1; min-width:0;text-align: right;"><span class="unit">A</span></div></div>
+        <div class="form-group"><label>${T('shortCircuit')}</label>
+          <div class="input-with-unit"><input type="text" inputmode="numeric" class="msb-isc-input input-neo" value="${escHtml(msb.isc)}" oninput="validateNumInput(this); recalculate()" placeholder="" style="flex:1; min-width:0;text-align: right;"><span class="unit">kA</span></div></div>
+        <div class="form-group"><label>${T('systemVoltage')}</label>
+          <div class="input-with-unit"><input type="text" inputmode="numeric" class="msb-voltage-input input-neo" value="${escHtml(msb.voltage)}" oninput="validateNumInput(this); recalculate()" placeholder="" style="flex:1; min-width:0;text-align: right;"><span class="unit">V</span></div></div>
+        <div class="form-group"><label>${T('maxLoadRatio')}</label>
+          <div class="input-with-unit"><input type="text" inputmode="numeric" class="msb-imaxpct-input input-neo" value="${escHtml(msb.imaxPct)}" oninput="validateNumInput(this); recalculate()" placeholder="" style="flex:1; min-width:0;text-align: right;"><span class="unit">%</span></div></div>
+      </div>`;
+    if (pfChecked) {
+      html += `<div style="margin-top:14px;"><div class="form-grid" style="grid-template-columns:repeat(3, minmax(330px, 342px)); margin-right:auto;">
+        <div class="form-group"><label>${T('capBankPower')}</label>
+          <div class="input-with-unit"><input type="text" inputmode="numeric" class="msb-capkvar-input input-neo" value="${escHtml(msb.capKvar)}" oninput="validateNumInput(this); recalculate()" placeholder="" style="flex:1; min-width:0;text-align: right;"><span class="unit">kVAr</span></div></div>
+      </div></div>`;
+    }
+    html += `</div>`;
+
+    // Load table
+    html += `<div class="msb-section" style="padding:0;">
+      <div style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">
+        <div class="msb-section-title" style="margin:0;"> ${T('sectionLoads')}</div>
+        <button class="btn btn-primary no-print" onclick="addLoad(${M})">＋ ${T('addLoad')}</button>
+      </div>
+      <div class="table-wrapper"><table class="load-table"><colgroup>
+        <col style="width:40px"><col style="width:140px"><col style="width:140px"><col style="width:220px">
+        <col style="width:100px"><col style="width:90px"><col style="width:70px"><col style="width:130px"><col style="width:90px"><col style="width:40px">
+      </colgroup><thead><tr>
+        <th>STT</th><th>${T('thLoadName')}</th><th>${T('thDeviceName')}</th><th>${T('thLoadType')}</th>
+        <th>${T('thCBRating')}</th><th>${T('thImax')}<br><small>= <span id="imaxpct_lbl_${M}">${escHtml(msb.imaxPct)}</span>% CB</small></th>
+        <th>${T('thTHDi')}</th><th>${T('thRefStandard')}</th><th>${T('thHarmonicCurrent')}</th><th class="no-print"></th>
+      </tr></thead><tbody id="loadBody_${M}">`;
+
+    msb.loads.forEach((load, li) => {
+      const L = load.id;
+      const lt = LOAD_TYPES[load.loadType];
+      html += `<tr id="load_${M}_${L}">
+        <td>${li+1}</td>
+        <td class="td-name"><input type="text" class="ld-name" value="${escHtml(load.loadName)}" placeholder=""></td>
+        <td class="td-name"><input type="text" class="ld-device" value="${escHtml(load.deviceName)}" placeholder=""></td>
+        <td><select class="load-type-select" onchange="onLoadTypeChange(${M},${L},this)">
+          <option value="">${T('selectType')}</option>
+          ${Object.keys(LOAD_TYPES).map(k => `<option value="${k}" ${k===load.loadType?'selected':''}>${LOAD_TYPES[k][currentLang]}</option>`).join('')}
+        </select></td>
+        <td><input type="text" inputmode="numeric" class="cb-rating" value="${escHtml(load.cbRating)}" oninput="validateNumInput(this); recalculate()" style="width:90px;" placeholder=""></td>
+        <td id="c_imax_${M}_${L}" style="font-size:13px;color:#fff;font-weight:500;text-align:center;">—</td>
+        <td id="c_thdi_${M}_${L}" style="font-size:13px;color:#fff;font-weight:500;text-align:center;">—</td>
+        <td id="c_ref_${M}_${L}" style="font-size:13px;color:#fff;font-weight:500;text-align:center;">—</td>
+        <td id="c_harm_${M}_${L}" style="font-size:13px;color:#fff;font-weight:500;text-align:right;padding-right:20px;">0</td>
+        <td class="td-actions no-print">
+          <button class="btn btn-danger btn-icon" onclick="removeLoad(${M},${L})" title="${currentLang==='vi'?'Xóa':'Remove'}">✕</button>
+        </td>
+      </tr>`;
+    });
+
+    html += `</tbody><tfoot>
+      <tr style="background:rgba(99,102,241,0.1);font-weight:700;font-size:14px;">
+        <td colspan="8" style="text-align:right;padding-right:50px;">${T('totalHarmonic')}</td>
+        <td id="c_totHarm_${M}" style="color:var(--accent-start);font-size:16px;text-align:right;padding-right:20px;">0</td><td class="no-print"></td>
+      </tr>
+      <tr style="background:rgba(99,102,241,0.05);font-weight:700;font-size:14px;">
+        <td colspan="8" style="text-align:right;padding-right:50px;">${T('totalLoadCurrent')}</td>
+        <td id="c_totLoad_${M}" style="font-size:16px;text-align:right;padding-right:20px;">0</td><td class="no-print"></td>
+      </tr>
+    </tfoot></table></div></div>`;
+
+    // Results section — detailed table like Excel CALCULATE sheet
+    html += `<div class="msb-section">
+      <div class="msb-section-title"> ${T('sectionResults')}</div>
+      <div class="table-wrapper"><table class="calc-table">
+        <tbody>
+          <tr><td class="calc-label">${T('rTotalHarmonic')}</td><td class="calc-value" id="r_totHarm_${M}">—</td></tr>
+          <tr><td class="calc-label">${T('rTotalLoad')}</td><td class="calc-value" id="r_totLoad_${M}">—</td></tr>
+          <tr><td class="calc-label">${T('rMainCB')}</td><td class="calc-value" id="r_mainCB_${M}">—</td></tr>
+          <tr><td class="calc-label">${T('rIscIl')}</td><td class="calc-value" id="r_iscil_${M}">—</td></tr>
+          <tr id="rc_tdd_${M}"><td class="calc-label">${T('rActualTDD')}</td><td class="calc-value" id="r_tdd_${M}">—</td></tr>
+          <tr id="rc_tddlim_${M}"${(ieee519On || !tt05On) ? '' : ' style="display:none"'}><td class="calc-label" id="r_tddlim_label_${M}">${T('rTddLimitIEEE')}</td><td class="calc-value" id="r_tddlim_${M}">—</td></tr>
+          <tr id="rc_loadkw_${M}"${tt05On ? '' : ' style="display:none"'}><td class="calc-label">${T('rLoadKW')}</td><td class="calc-value" id="r_loadkw_${M}">—</td></tr>
+          <tr id="rc_tddlimTT_${M}"${tt05On ? '' : ' style="display:none"'}><td class="calc-label">${T('rTddLimitTT05')}</td><td class="calc-value" id="r_tddlimTT_${M}">—</td></tr>
+          <tr id="rc_status_${M}"><td class="calc-label">${T('rTddStatus')}</td><td class="calc-value" id="r_status_${M}">—</td></tr>
+          <tr><td class="calc-label" id="r_hpct_label_${M}">${T('rHarmonicPct')} ${stdLabel(currentLang)}</td><td class="calc-value" id="r_hpct_${M}">0</td></tr>
+          <tr><td class="calc-label">${T('rHarmonicAmp')}</td><td class="calc-value" id="r_hamp_${M}">0</td></tr>
+          ${pfChecked ? `<tr><td class="calc-label">${T('rCapKvar')}</td><td class="calc-value" id="r_capkvar_${M}">—</td></tr>
+          <tr><td class="calc-label">${T('rCapCurrent')}</td><td class="calc-value" id="r_capcurr_${M}">—</td></tr>` : ''}
+          <tr class="calc-highlight"><td class="calc-label">${T('rAhfRecommended')}</td><td class="calc-value" id="r_ahfraw_${M}">—</td></tr>
+          <tr class="calc-highlight"><td class="calc-label">${T('rAhfReserve')} <input type="text" inputmode="numeric" class="reserve-input" id="res_pct_${M}" value="20" oninput="validateNumInput(this); recalculate()" style="width:54px;padding:2px 6px;text-align:right;display:inline-block;margin:0 2px;">%</td><td class="calc-value" id="r_ahfres_${M}">—</td></tr>
+          <tr class="calc-proposed"><td class="calc-label">${T('rAhfProposed')}</td><td class="calc-value" id="r_ahf_${M}" style="font-size:22px;">—</td></tr>
+        </tbody>
+      </table></div>
+      <div style="margin-top:14px;padding:14px;background:var(--bg-tertiary);border-radius:8px;border:1px solid var(--border-color);">
+        <div style="font-size:13px;font-weight:700;color:var(--accent-start);margin-bottom:6px;">${T('funcSummaryTitle')}</div>
+        <div id="r_func_${M}" style="font-size:13px;color:var(--text-secondary);"></div>
+      </div>
+    </div>`;
+
+    html += `</div></div>`;
+  });
+
+  container.innerHTML = html;
+  recalculate(); // fill computed values
+}
+
+// ===== RECALCULATE (numbers only — no DOM rebuild, no focus loss) =====
+// Find minimum a*80 + b*100 + c*120 > target (a,b,c >= 0)
+function calcAHFProposed(target) {
+  if (target <= 0) return 0;
+  let best = Infinity;
+  const maxC = Math.ceil(target / 80);
+  for (let c = 0; c <= maxC; c++) {
+    for (let b = 0; b <= maxC; b++) {
+      const rem = target - b * 100 - c * 120;
+      const a = rem > 0 ? Math.ceil(rem / 80) : 0;
+      const val = a * 80 + b * 100 + c * 120;
+      if (val >= target && val < best) best = val;
+      if (b * 100 + c * 120 >= best) break;
+    }
+    if (c * 120 >= best) break;
+  }
+  return best === Infinity ? 0 : best;
+}
+
+function recalculate() {
+  msbCalc = {};
+  const pfChecked = document.querySelector('#funcCheckboxes input[value="pf"]')?.checked;
+  const ieee519On = document.querySelector('#standardCheckboxes input[value="IEEE519"]')?.checked;
+  const tt05On = document.querySelector('#standardCheckboxes input[value="TT05"]')?.checked;
+  const fHarm = document.querySelector('#funcCheckboxes input[value="harmonic"]')?.checked;
+  const fPF = pfChecked;
+  const fBal = document.querySelector('#funcCheckboxes input[value="balance"]')?.checked;
+
+  msbList.forEach(msb => {
+    const M = msb.id;
+    const el = document.getElementById('msb_' + M);
+    if (!el) return;
+
+    const mainCB = parseFloat(el.querySelector('.msb-maincb-input')?.value) || 0;
+    const isc_kA = parseFloat(el.querySelector('.msb-isc-input')?.value) || 0;
+    const voltage = parseFloat(el.querySelector('.msb-voltage-input')?.value) || 400;
+    const capKvar = parseFloat(el.querySelector('.msb-capkvar-input')?.value) || 0;
+    let imaxPct = parseFloat(el.querySelector('.msb-imaxpct-input')?.value);
+    if (isNaN(imaxPct) || imaxPct <= 0) imaxPct = 80;
+    const isc_A = isc_kA * 1000;
+    const IL = mainCB;
+
+    // Cap bank current display
+    const capCurrEl = document.getElementById('capCurr_' + M);
+    const capCurrent = capKvar / (Math.sqrt(3) * voltage / 1000);
+    if (capCurrEl) capCurrEl.value = capKvar > 0 ? capCurrent.toFixed(1) + ' A' : '';
+
+    // Per-load computation
+    let totalHarmonic = 0, totalImax = 0;
+    msb.loads.forEach(load => {
+      const L = load.id;
+      const row = document.getElementById('load_' + M + '_' + L);
+      if (!row) return;
+      const typeSel = row.querySelector('.load-type-select');
+      const lt = LOAD_TYPES[typeSel?.value];
+      const cbVal = parseFloat(row.querySelector('.cb-rating')?.value) || 0;
+      const imax = cbVal * imaxPct / 100;
+      const thdi = lt ? lt.thdi : 0;
+      const ref = lt ? lt.ref : '—';
+      const harmonic = imax * thdi;
+      totalHarmonic += harmonic;
+      totalImax += imax;
+
+      const $=id=>document.getElementById(id);
+      $('c_imax_'+M+'_'+L).textContent = imax > 0 ? imax.toFixed(1) : '—';
+      $('c_thdi_'+M+'_'+L).textContent = lt ? (thdi*100).toFixed(2).replace(/\.?0+$/,'')+'%' : '—';
+      $('c_ref_'+M+'_'+L).textContent = ref;
+      $('c_harm_'+M+'_'+L).textContent = harmonic > 0 ? harmonic.toFixed(1) : '0';
+    });
+
+    // Totals in load table
+    const $=id=>document.getElementById(id);
+    const imaxLbl = $('imaxpct_lbl_'+M); if(imaxLbl) imaxLbl.textContent = imaxPct;
+    const totImaxEl = $('c_totImax_'+M); if(totImaxEl) totImaxEl.textContent = totalImax.toFixed(1);
+    $('c_totHarm_'+M).textContent = totalHarmonic.toFixed(1);
+    $('c_totLoad_'+M).textContent = totalImax.toFixed(1);
+
+    // === Results table ===
+    const maxHarmonic = (mainCB > 0 && mainCB < totalImax) ? totalHarmonic * mainCB / totalImax : totalHarmonic;
+    $('r_totHarm_'+M).textContent = maxHarmonic > 0 ? maxHarmonic.toFixed(1) : '—';
+    const maxLoad = (mainCB > 0 && mainCB <= totalImax) ? mainCB : totalImax;
+    $('r_totLoad_'+M).textContent = maxLoad > 0 ? maxLoad.toFixed(1) : '—';
+    $('r_mainCB_'+M).textContent = mainCB > 0 ? mainCB.toFixed(0) : '—';
+
+    // Adjusted harmonic (kept for TDD calc compatibility)
+    let adjHarm = totalHarmonic;
+    if (totalImax > 0 && mainCB > 0 && totalImax > mainCB) adjHarm = totalHarmonic * mainCB / totalImax;
+    const adjEl = $('r_adjHarm_'+M); if(adjEl) adjEl.textContent = adjHarm > 0 ? adjHarm.toFixed(1) : '—';
+
+    // Isc/IL — IL = mainCB (Dòng định mức ACB/MCCB tổng In)
+    const iscIl = mainCB > 0 ? isc_A / mainCB : 0;
+    $('r_iscil_'+M).textContent = iscIl > 0 ? iscIl.toFixed(1) : '—';
+
+    // TDD = ΣIhài / ΣItải × 100
+    const tddActual = maxLoad > 0 ? (maxHarmonic / maxLoad) * 100 : 0;
+    $('r_tdd_'+M).textContent = tddActual > 0 ? tddActual.toFixed(1) + '%' : '—';
+
+    // TDD Limit
+    let tddLimit = 8.0, bMin = 20, bMax = 50;
+    for (const r of IEEE519_TDD) { if (iscIl >= r.min && iscIl < r.max) { tddLimit = r.tdd; bMin = r.min; bMax = r.max; break; } }
+    $('r_tddlim_'+M).textContent = (iscIl > 0 && maxLoad > 0) ? '≤ ' + tddLimit.toFixed(0) + '%' : '—';
+
+    // Giới hạn TDD theo TT 05/2025-BCT: theo cấp điện áp; hạ áp theo công suất phụ tải
+    // P = √3 × U × IL × PF (PF giả định 0.9): ≥ 50 kW -> 12%, < 50 kW -> 20%; trung áp 8%; 110 kV 4%
+    const TT05_PF = 0.9;
+    const loadKW = maxLoad > 0 ? Math.sqrt(3) * voltage * maxLoad * TT05_PF / 1000 : 0;
+    const tt05Limit = voltage >= 110000 ? 4 : (voltage > 1000 ? 8 : (loadKW >= 50 ? 12 : 20));
+    const useIEEE = ieee519On || !tt05On; // không chọn tiêu chuẩn nào: giữ mặc định IEEE-519 như trước
+    const useTT = tt05On && maxLoad > 0;
+    $('r_loadkw_'+M).textContent = loadKW > 0 ? loadKW.toFixed(1) : '—';
+    $('r_tddlimTT_'+M).textContent = useTT ? '≤ ' + tt05Limit + '%' : '—';
+    $('rc_tddlim_'+M).style.display = useIEEE ? '' : 'none';
+    $('rc_loadkw_'+M).style.display = tt05On ? '' : 'none';
+    $('rc_tddlimTT_'+M).style.display = tt05On ? '' : 'none';
+    // Chọn cả hai tiêu chuẩn thì phải thỏa cả hai -> dùng giới hạn chặt hơn (nhỏ hơn)
+    let effLimit = useIEEE ? tddLimit : null;
+    if (useTT) effLimit = effLimit == null ? tt05Limit : Math.min(effLimit, tt05Limit);
+
+    msbCalc[M] = { iscIl, tddLimit, bMin, bMax, imaxPct, hasData: (iscIl > 0 && maxLoad > 0), loadKW, tt05Limit, useTT };
+    const limLabel = $('r_tddlim_label_'+M);
+    if (limLabel) limLabel.textContent = T('rTddLimitIEEE');
+    const hpLabel = $('r_hpct_label_'+M);
+    if (hpLabel) hpLabel.textContent = T('rHarmonicPct') + ' ' + stdLabel(currentLang);
+
+    // TDD Status
+    let needAHF = false;
+    const rcTdd = $('rc_tdd_'+M);
+    const rcSt = $('rc_status_'+M);
+    if (effLimit != null && tddActual > effLimit && tddActual > 0) {
+      needAHF = true;
+      $('r_status_'+M).textContent = T('fail');
+      if(rcTdd) rcTdd.className = 'fail';
+      if(rcSt) rcSt.className = 'fail';
+    } else if (tddActual > 0) {
+      $('r_status_'+M).textContent = T('pass');
+      if(rcTdd) rcTdd.className = 'pass';
+      if(rcSt) rcSt.className = 'pass';
+    } else {
+      $('r_status_'+M).textContent = '—';
+      if(rcTdd) rcTdd.className = '';
+      if(rcSt) rcSt.className = '';
+    }
+
+    // Harmonic to remove
+    const pctRem = (effLimit != null && tddActual > effLimit) ? (tddActual - effLimit) : 0;
+    const curRem = maxLoad > 0 ? (pctRem / 100) * maxLoad : 0;
+    $('r_hpct_'+M).textContent = pctRem > 0 ? pctRem.toFixed(1) + '%' : '—';
+    $('r_hamp_'+M).textContent = curRem > 0 ? curRem.toFixed(1) : '—';
+
+    // Cap bank in results table
+    const capKvarEl = $('r_capkvar_'+M);
+    const capCurrResEl = $('r_capcurr_'+M);
+    if (capKvarEl) capKvarEl.textContent = capKvar > 0 ? capKvar.toFixed(0) : '—';
+    if (capCurrResEl) capCurrResEl.textContent = capCurrent > 0 ? capCurrent.toFixed(1) : '—';
+
+    // AHF
+    let ahfRaw = curRem;
+    if (pfChecked && capKvar > 0) ahfRaw = Math.sqrt(curRem*curRem + capCurrent*capCurrent);
+    const resPctEl = $('res_pct_'+M);
+    let resPct = resPctEl ? parseFloat(resPctEl.value) : 20;
+    if (isNaN(resPct) || resPct < 0) resPct = 20;
+    if (msbCalc[M]) msbCalc[M].resPct = resPct;
+    const ahfRes = ahfRaw * (1 + resPct/100);
+    const ahfProp = ahfRes > 0 ? calcAHFProposed(ahfRes) : 0;
+    $('r_ahfraw_'+M).textContent = ahfRaw > 0 ? ahfRaw.toFixed(1) : '—';
+    $('r_ahfres_'+M).textContent = ahfRes > 0 ? ahfRes.toFixed(1) : '—';
+    $('r_ahf_'+M).textContent = ahfProp > 0 ? ahfProp + ' A' : '—';
+
+    // Function summary
+    let funcHtml = '';
+    if (fHarm) funcHtml += T('funcHarmonicDesc') + '<br>';
+    if (fPF) funcHtml += T('funcPFDesc') + '<br>';
+    if (fBal) funcHtml +=  T('funcBalanceDesc') + '<br>';
+    if (needAHF) funcHtml += `<div style="margin-top:10px;padding:10px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;color:#ef4444;font-weight:600;">${T('noteNeedAHF')}</div>`;
+    else if (tddActual > 0) funcHtml += `<div style="margin-top:10px;padding:10px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:6px;color:#22c55e;font-weight:600;">${T('noteNoNeed')}</div>`;
+    $('r_func_'+M).innerHTML = funcHtml;
+  });
+  renderAssumptions();
+}
+
+// ===== GIẢ ĐỊNH TÍNH TOÁN (động theo loại tải đã chọn) =====
+function renderAssumptions() {
+  const listEl = document.getElementById('assumptionsList');
+  if (!listEl) return;
+  const vi = currentLang === 'vi';
+  const seen = new Set();
+  const lines = [];
+  const zeroNames = [];
+  document.querySelectorAll('.load-type-select').forEach(sel => {
+    const key = sel.value;
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    const lt = LOAD_TYPES[key];
+    if (!lt) return;
+    const name = lt[currentLang];
+    if (lt.thdi > 0) {
+      const pct = (lt.thdi * 100).toFixed(2).replace(/\.?0+$/, '');
+      lines.push(vi
+        ? `${name} có TDD ≤ ${pct}% (tham chiếu ${lt.ref})`
+        : `${name} TDD ≤ ${pct}% (ref: ${lt.ref})`);
+    } else {
+      zeroNames.push(name);
+    }
+  });
+  if (zeroNames.length) {
+    lines.push(vi
+      ? `${zeroNames.join(', ')} và thiết bị chữa cháy không gây ra sóng hài`
+      : `${zeroNames.join(', ')} and fire suppression equipment does not generate harmonics`);
+  }
+  if (lines.length === 0) {
+    lines.push(vi
+      ? 'Chưa chọn loại tải — các giả định theo loại tải sẽ tự cập nhật khi bạn chọn.'
+      : 'No load type selected — load-type assumptions will update automatically.');
+  }
+  // Dòng điện tải lớn nhất = % cấu hình (mục 4) — gộp các tủ cùng % vào một dòng
+  const imaxGroups = new Map();
+  msbList.forEach(msb => {
+    const c = msbCalc[msb.id];
+    const pct = c ? c.imaxPct : (parseFloat(msb.imaxPct) || 80);
+    if (!imaxGroups.has(pct)) imaxGroups.set(pct, []);
+    imaxGroups.get(pct).push(msb.name);
+  });
+  imaxGroups.forEach((names, pct) => {
+    const list = names.join(', ');
+    lines.push(vi
+      ? `Dòng điện tải lớn nhất = ${pct}% so với dòng định mức CB bảo vệ thiết bị tại tủ ${list}`
+      : `Load max current = ${pct}% of the protective CB rated current at panel ${list}`);
+  });
+  // Giới hạn TDD theo IEEE-519 — động theo từng tủ MSB
+  const fmtRange = (mn, mx) => mn === 0 ? `< ${mx}` : (mx === Infinity ? `≥ ${mn}` : `${mn}–${mx}`);
+  const incompleteNames = [];
+  // Gộp các tủ có cùng giới hạn TDD + cùng dải Isc/IL vào một dòng
+  const tddGroups = new Map();
+  msbList.forEach(msb => {
+    const c = msbCalc[msb.id];
+    if (c && c.hasData) {
+      const range = fmtRange(c.bMin, c.bMax);
+      // Lấy đúng giá trị đã hiển thị tại hàng "%TDD cho phép theo IEEE-519"
+      const limCell = document.getElementById('r_tddlim_' + msb.id);
+      const limTxt = (limCell && limCell.textContent.trim() !== '—')
+        ? limCell.textContent.trim()
+        : `≤ ${c.tddLimit.toFixed(0)}%`;
+      const key = limTxt + '|' + range;
+      if (!tddGroups.has(key)) tddGroups.set(key, { limTxt, range, names: [] });
+      tddGroups.get(key).names.push(msb.name);
+    } else {
+      incompleteNames.push(msb.name);
+    }
+  });
+  const ieeeOnA = document.querySelector('#standardCheckboxes input[value="IEEE519"]')?.checked;
+  const tt05OnA = document.querySelector('#standardCheckboxes input[value="TT05"]')?.checked;
+  if (ieeeOnA || !tt05OnA) tddGroups.forEach(g => {
+    const list = g.names.join(', ');
+    lines.push(vi
+      ? `Giới hạn TDD ${g.limTxt} theo IEEE-519 (120V–69kV, Isc/IL = ${g.range}) tại tủ ${list}`
+      : `TDD limit ${g.limTxt} per IEEE-519 (120V–69kV, Isc/IL = ${g.range}) at panel ${list}`);
+  });
+  // Giới hạn TDD theo TT 05/2025-BCT — gộp các tủ cùng mức giới hạn
+  if (tt05OnA) {
+    const ttGroups = new Map();
+    msbList.forEach(msb => {
+      const c = msbCalc[msb.id];
+      if (!c || !c.useTT) return;
+      if (!ttGroups.has(c.tt05Limit)) ttGroups.set(c.tt05Limit, []);
+      ttGroups.get(c.tt05Limit).push(msb.name);
+    });
+    ttGroups.forEach((names, lim) => {
+      const list = names.join(', ');
+      const basisVi = lim === 12 ? 'hạ áp, phụ tải ≥ 50 kW' : lim === 20 ? 'hạ áp, phụ tải < 50 kW' : lim === 8 ? 'trung áp' : '110 kV';
+      const basisEn = lim === 12 ? 'low voltage, load ≥ 50 kW' : lim === 20 ? 'low voltage, load < 50 kW' : lim === 8 ? 'medium voltage' : '110 kV';
+      lines.push(vi
+        ? `Giới hạn TDD ≤ ${lim}% theo TT 05/2025-BCT (${basisVi}; công suất phụ tải P = √3 × U × IL × 0.9) tại tủ ${list}`
+        : `TDD limit ≤ ${lim}% per Circular 05/2025/TT-BCT (${basisEn}; load power P = √3 × U × IL × 0.9) at panel ${list}`);
+    });
+  }
+  if ((ieeeOnA || !tt05OnA) && incompleteNames.length) {
+    const list = incompleteNames.join(', ');
+    lines.push(vi
+      ? `Giới hạn TDD theo IEEE-519 — chưa đủ dữ liệu để tính Isc/IL tại tủ ${list}, vui lòng nhập Isc và dòng định mức ACB/MCCB tổng`
+      : `TDD limit per IEEE-519 — insufficient data to compute Isc/IL at panel ${list}, please enter Isc and main ACB/MCCB rating`);
+  }
+  // Công suất AHF — gộp các tủ cùng chức năng và cùng % dự phòng vào một dòng
+  const pfOn = document.querySelector('#funcCheckboxes input[value="pf"]')?.checked;
+  const ahfGroups = new Map();
+  msbList.forEach(msb => {
+    const c = msbCalc[msb.id];
+    const resPct = (c && c.resPct != null) ? c.resPct : 20;
+    if (!ahfGroups.has(resPct)) ahfGroups.set(resPct, []);
+    ahfGroups.get(resPct).push(msb.name);
+  });
+  ahfGroups.forEach((names, resPct) => {
+    const list = names.join(', ');
+    if (vi) {
+      let s = 'Công suất AHF bao gồm chức năng lọc sóng hài';
+      if (pfOn) s += ' và bù công suất phản kháng';
+      s += ` và dự phòng ${resPct}% tại tủ ${list}`;
+      lines.push(s);
+    } else {
+      let s = 'AHF capacity includes harmonic filtering';
+      if (pfOn) s += ' and reactive power compensation';
+      s += ` and ${resPct}% reserve at panel ${list}`;
+      lines.push(s);
+    }
+  });
+  listEl.innerHTML = lines.map(t => `<li>${escHtml(t)}</li>`).join('');
+
+  // Lưu danh sách tủ thiếu dữ liệu để nút "Kiểm tra" dùng (không tự bật popup)
+  incompleteMsbNames = incompleteNames.slice();
+}
+
+// ===== Rà soát chi tiết dữ liệu còn thiếu theo từng tủ =====
+function collectMissing() {
+  const vi = currentLang === 'vi';
+  const pfChecked = document.querySelector('#funcCheckboxes input[value="pf"]')?.checked;
+  const result = [];
+  msbList.forEach(msb => {
+    const el = document.getElementById('msb_' + msb.id);
+    if (!el) return;
+    const num = sel => parseFloat(el.querySelector(sel)?.value) || 0;
+    const raw = sel => (el.querySelector(sel)?.value || '').trim();
+    const miss = [];
+    if (num('.msb-maincb-input') <= 0) miss.push(vi ? '1. Dòng định mức ACB/MCCB tổng (In)' : 'Main ACB/MCCB rating (In)');
+    if (num('.msb-isc-input') <= 0) miss.push(vi ? 'Dòng ngắn mạch Isc' : 'Short-circuit current Isc');
+    if (raw('.msb-voltage-input') === '') miss.push(vi ? '3. Điện áp hệ thống' : 'System voltage');
+    if (pfChecked && num('.msb-capkvar-input') <= 0) miss.push(vi ? '5. Công suất tụ bù (kVAr)' : 'Capacitor bank power (kVAr)');
+    if (msb.loads.length === 0) {
+      miss.push(vi ? 'Chưa có tải nào trong bảng danh mục tải' : 'No load in the load table');
+    } else {
+      msb.loads.forEach((load, i) => {
+        const row = document.getElementById('load_' + msb.id + '_' + load.id);
+        if (!row) return;
+        const lt = row.querySelector('.load-type-select')?.value;
+        const cb = parseFloat(row.querySelector('.cb-rating')?.value) || 0;
+        if (!lt) miss.push(vi ? `Tải #${i + 1} chưa chọn loại tải` : `Load #${i + 1}: no load type selected`);
+        if (cb <= 0) miss.push(vi ? `Tải #${i + 1} chưa nhập dòng ACB/MCCB/MCB` : `Load #${i + 1}: no CB rating`);
+      });
+    }
+    if (miss.length) result.push({ name: msb.name, miss });
+  });
+  return result;
+}
+
+// ===== NÚT KIỂM TRA — chỉ bật popup khi bấm =====
+function checkData() {
+  recalculate(); // cập nhật kết quả + dòng giả định
+  const vi = currentLang === 'vi';
+  const missing = collectMissing();
+  if (missing.length) {
+    const head = vi ? 'Cảnh báo — dữ liệu còn thiếu:' : 'Warning — missing data:';
+    const blocks = missing.map(m => {
+      const items = m.miss.map(x => `<li>${escHtml(x)}</li>`).join('');
+      const cab = vi ? `Tủ "${escHtml(m.name)}" thiếu:` : `Panel "${escHtml(m.name)}" missing:`;
+      return `<div class="toast-block"><div class="toast-cab">${cab}</div><ul>${items}</ul></div>`;
+    }).join('');
+    showToast(`<div class="toast-head">${head}</div>${blocks}`, 'warning');
+  } else {
+    showToast(vi ? 'Dữ liệu đã đủ.' : 'All data complete.', 'success');
+  }
+}
+
+// ===== POPUP (TOAST) — msg là chuỗi HTML đã được kiểm soát =====
+function showToast(msg, type) {
+  let wrap = document.getElementById('toastWrap');
+  if (!wrap) { wrap = document.createElement('div'); wrap.id = 'toastWrap'; wrap.className = 'toast-wrap'; document.body.appendChild(wrap); }
+  wrap.innerHTML = '';
+  const t = document.createElement('div');
+  t.className = 'toast' + (type === 'success' ? ' toast-success' : '');
+  t.innerHTML = `<div class="toast-body">${msg}</div><span class="toast-close">${currentLang==='vi'?'Đóng':'Close'}</span>`;
+  wrap.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('show'));
+  const hide = () => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); };
+  t.querySelector('.toast-close').onclick = hide;
+}
+
+function validateNumInput(el) {
+  const v = el.value.trim();
+  if (v === '') { el.classList.remove('input-error'); el.title = ''; return; }
+  if (isNaN(v) || parseFloat(v) < 0) {
+    el.classList.add('input-error');
+    el.title = currentLang === 'vi' ? 'Vui lòng nhập số hợp lệ' : 'Please enter a valid number';
+  } else {
+    el.classList.remove('input-error');
+    el.title = '';
+  }
+}
+
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ===== INLINE MSB NAME EDITING =====
+function startEditMsbName(msbId, wrapEl) {
+  if (wrapEl.querySelector('.msb-name-edit')) return;
+  const msb = getMSB(msbId);
+  if (!msb) return;
+  const textEl = wrapEl.querySelector('.msb-name-text');
+  const penEl = wrapEl.querySelector('.pen-icon');
+  const currentName = msb.name;
+  textEl.style.display = 'none';
+  if (penEl) penEl.style.display = 'none';
+  const input = document.createElement('input');
+  input.type = 'text'; input.className = 'msb-name-edit'; input.value = currentName;
+  wrapEl.appendChild(input); input.focus(); input.select();
+  input.onclick = (e) => e.stopPropagation();
+  const finish = () => {
+    const newName = input.value.trim() || currentName;
+    msb.name = newName; textEl.textContent = newName;
+    textEl.style.display = ''; if (penEl) penEl.style.display = ''; input.remove();
+  };
+  input.addEventListener('blur', finish);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { input.value = currentName; input.blur(); }
+  });
+}
+
+// ===== LOAD MANAGEMENT =====
+function addLoad(msbId, data) {
+  const msb = getMSB(msbId);
+  if (!msb) return;
+  msb.loadIdCounter++;
+  msb.loads.push({ id:msb.loadIdCounter, loadName:data?.loadName||'', deviceName:data?.deviceName||'', loadType:data?.loadType||'', cbRating:data?.cbRating||'' });
+  saveAllInputs();
+  renderAllMSBs();
+}
+
+function removeLoad(msbId, loadId) {
+  const msb = getMSB(msbId); if (!msb) return;
+  saveAllInputs();
+  msb.loads = msb.loads.filter(l => l.id !== loadId);
+  renderAllMSBs();
+}
+
+function onLoadTypeChange(msbId, loadId, sel) {
+  const msb = getMSB(msbId);
+  const load = msb?.loads.find(l => l.id === loadId);
+  if (!load) return;
+  saveAllInputs();
+  load.loadType = sel.value;
+  renderAllMSBs();
+}
+
+// Input handlers — only recalculate, NO re-render
+function onMsbInput() { recalculate(); }
+function onLoadInput() { recalculate(); }
+
+function saveAllInputs() {
+  msbList.forEach(msb => {
+    const el = document.getElementById('msb_' + msb.id);
+    if (!el) return;
+    msb.mainCB = el.querySelector('.msb-maincb-input')?.value ?? msb.mainCB;
+    msb.isc = el.querySelector('.msb-isc-input')?.value ?? msb.isc;
+    msb.voltage = el.querySelector('.msb-voltage-input')?.value ?? msb.voltage;
+    const imaxIn = el.querySelector('.msb-imaxpct-input');
+    if (imaxIn) msb.imaxPct = imaxIn.value;
+    const capIn = el.querySelector('.msb-capkvar-input');
+    if (capIn) msb.capKvar = capIn.value;
+    msb.loads.forEach(load => {
+      const row = document.getElementById('load_' + msb.id + '_' + load.id);
+      if (!row) return;
+      load.loadName = row.querySelector('.ld-name')?.value ?? load.loadName;
+      load.deviceName = row.querySelector('.ld-device')?.value ?? load.deviceName;
+      load.cbRating = row.querySelector('.cb-rating')?.value ?? load.cbRating;
+      const ts = row.querySelector('.load-type-select');
+      if (ts) load.loadType = ts.value;
+    });
+  });
+}
+
+function calculateAll() { saveAllInputs(); renderAllMSBs(); }
+
+// ===== RESET =====
+function resetAll() {
+  if (!confirm(currentLang==='vi' ? 'Bạn có chắc muốn xóa tất cả dữ liệu?' : 'Reset all data?')) return;
+  msbList = [];
+  msbIdCounter = 0;
+  document.querySelectorAll('#projectName,#projectLocation,#projectInvestor,#projectAuthor').forEach(el => el.value='');
+  document.getElementById('projectRevision').value = '';
+  document.getElementById('projectDate').value = '';
+  addMSB({name:'MSB Tổng', voltage:400});
+}
+
+// ===== XUẤT PDF THEO BỐ CỤC BÁO CÁO MẪU (A–G) =====
+function exportReport() {
+  saveAllInputs();
+  recalculate();
+  buildReport();
+  document.body.classList.add('report-mode');
+  window.print();
+}
+window.addEventListener('afterprint', () => document.body.classList.remove('report-mode'));  //////PHẦN REPORT
+
+function buildReport() {
+  const $v = id => (document.getElementById(id)?.value || '').trim();
+  const cell = id => { const el = document.getElementById(id); return el ? el.textContent.trim() : ''; };
+  const esc = escHtml;
+  // Ngôn ngữ bản in theo ngôn ngữ đang chọn trên giao diện
+  const RL = currentLang === 'en' ? 'en' : 'vi';
+  const EN = RL === 'en';
+  const tr = (vi, en) => EN ? en : vi;
+  const ieeeR = document.querySelector('#standardCheckboxes input[value="IEEE519"]')?.checked;
+  const ttR = document.querySelector('#standardCheckboxes input[value="TT05"]')?.checked;
+  // Ô giới hạn TDD ở mục F: hiển thị theo tiêu chuẩn đã chọn
+  const limF = M => {
+    const a = cell('r_tddlim_' + M) || '—', b = cell('r_tddlimTT_' + M) || '—';
+    if (ieeeR && ttR) return `${a} (IEEE)<br>${b} ${tr('(TT05)', '(Circular 05)')}`;
+    return ttR ? b : a;
+  };
+
+  // CSS ĐẶC TRỊ LỖI CHỒNG CHÉO KHI IN
+  const printFixStyle = `<style>
+    @media print {
+      /* Header bảng lặp lại tự nhiên ở đầu mỗi trang khi bảng bị ngắt */
+      thead { display: table-header-group !important; }
+      /* Chỉ chống ngắt giữa chừng 1 dòng dữ liệu, và các bảng ngắn (A/B/D/E/F) */
+      tr, .table-wrapper { page-break-inside: avoid !important; }
+      /* Bảng chi tiết theo tủ MSB (mục G) được phép tự ngắt trang khi quá dài */
+      .rpt-block, .rpt-block table { page-break-inside: auto !important; }
+    }
+    .table-wrapper { margin-bottom: 8px; clear: both; display: block; }
+    @page { @bottom-right { content:"${tr('Trang ', 'Page ')}" counter(page) " / " counter(pages); font-family:Arial, sans-serif; font-size:10px; color:#333; } }
+  </style>`;
+
+  // A. Thông tin dự án
+  const proj = [
+    [tr('Tên dự án', 'Project name'), $v('projectName')],
+    [tr('Địa điểm', 'Location'), $v('projectLocation')],
+    [tr('Khách hàng', 'Client'), $v('projectInvestor')],
+    [tr('Người lập', 'Prepared by'), $v('projectAuthor')],
+    [tr('Ngày lập', 'Date'), $v('projectDate').replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$3/$2/$1')],
+  ];
+  const aRows = proj.map(([k, val]) => `<tr><td class="k" style="text-align: left;">${k}</td><td style="text-align: left;">${esc(val)}</td></tr>`).join('');
+  
+  // B. Tiêu chuẩn áp dụng 
+  const stds = [
+    ['IEEE-519', tr('Giới hạn nhiễu hài dòng điện (TDD ≤ 8% tại điện áp 120V–69kV, Isc/IL = 20–50)', 'Harmonic current distortion limits (TDD ≤ 8% at 120V–69kV, Isc/IL = 20–50)')],
+    [tr('TT 05/2025-BCT', 'Circular 05/2025/TT-BCT'), tr('Quy định hệ thống truyền tải điện, phân phối điện và đo đếm điện năng', 'Regulation on electricity transmission, distribution systems and electricity metering')],
+    ['IEC TR 61000-3-14', tr('Tham chiếu TDD cho thiết bị điện tử dòng mỗi pha < 16A (Class A) và thiết bị chiếu sáng > 25W (Class C)', 'TDD reference for electronic equipment with current per phase < 16A (Class A) and lighting equipment > 25W (Class C)')],
+    ['IEEE 3002.8', tr('Tham chiếu TDD cho Rectifier/ASD/VFD/Chargers 6, 12, 18, 24-Pulse', 'TDD reference for Rectifier/ASD/VFD/Chargers 6, 12, 18, 24-Pulse')],
+  ];
+  const bRows = stds.map(([n, d]) => `<tr><td class="name" style="text-align: left;">${n}</td><td style="text-align: left;">${d}</td></tr>`).join('');
+
+  // C. Giả định tính toán (theo ngôn ngữ đang chọn)
+  renderAssumptions();
+  const assumItems = [...document.querySelectorAll('#assumptionsList li')].map(li => `<li>${esc(li.textContent)}</li>`).join('');
+
+  // D. Bảng tham chiếu IEEE-519
+  const dTable = `<div class="table-wrapper">
+    <table style="table-layout:fixed;"><colgroup><col style="width:16%"><col style="width:14%"><col style="width:14%"><col style="width:14%"><col style="width:14%"><col style="width:14%"><col style="width:14%"></colgroup><thead><tr><th>Isc/IL</th><th>3≤h&lt;11</th><th>11≤h&lt;17</th><th>17≤h&lt;23</th><th>23≤h&lt;35</th><th>35≤h</th><th>TDD</th></tr></thead><tbody>
+      <tr><td class="rpt-center">&lt;20</td><td class="rpt-center">4.0%</td><td class="rpt-center">2.0%</td><td class="rpt-center">1.5%</td><td class="rpt-center">0.6%</td><td class="rpt-center">0.3%</td><td class="rpt-center">5.0%</td></tr>
+      <tr><td class="rpt-center">20–50</td><td class="rpt-center">7.0%</td><td class="rpt-center">3.5%</td><td class="rpt-center">2.5%</td><td class="rpt-center">1.0%</td><td class="rpt-center">0.5%</td><td class="rpt-center">8.0%</td></tr>
+      <tr><td class="rpt-center">50–100</td><td class="rpt-center">10.0%</td><td class="rpt-center">4.5%</td><td class="rpt-center">4.0%</td><td class="rpt-center">1.5%</td><td class="rpt-center">0.7%</td><td class="rpt-center">12.0%</td></tr>
+      <tr><td class="rpt-center">100–1000</td><td class="rpt-center">12.0%</td><td class="rpt-center">5.5%</td><td class="rpt-center">5.0%</td><td class="rpt-center">2.0%</td><td class="rpt-center">1.0%</td><td class="rpt-center">15.0%</td></tr>
+      <tr><td class="rpt-center">&gt;1000</td><td class="rpt-center">15.0%</td><td class="rpt-center">7.0%</td><td class="rpt-center">6.0%</td><td class="rpt-center">2.5%</td><td class="rpt-center">1.4%</td><td class="rpt-center">20.0%</td></tr>
+    </tbody></table>
+  </div>`;
+
+  // E. Bảng tham chiếu TT 05/2025-BCT
+  const eTable = `<div class="table-wrapper">
+    <table><thead><tr><th>${tr('Cấp điện áp', 'Voltage level')}</th><th>${tr('Tổng biến dạng', 'Total distortion')}</th><th>${tr('Biến dạng riêng lẻ', 'Individual distortion')}</th></tr></thead><tbody>
+      <tr><td class="rpt-center">110 kV</td><td class="rpt-center">4%</td><td class="rpt-center">${tr('3,5%', '3.5%')}</td></tr>
+      <tr><td class="rpt-center">${tr('Trung áp', 'Medium voltage')}</td><td class="rpt-center">8%</td><td class="rpt-center">7%</td></tr>
+      <tr><td>${tr('Hạ áp', 'Low voltage')}</td><td>${tr('12% nếu phụ tải ≥ 50 kW;<br> 20% nếu phụ tải &lt; 50 kW', '12% if load ≥ 50 kW;<br> 20% if load &lt; 50 kW')}</td><td>${tr('10% nếu phụ tải ≥ 50 kW;<br> 15% nếu phụ tải &lt; 50 kW', '10% if load ≥ 50 kW;<br> 15% if load &lt; 50 kW')}</td></tr>
+    </tbody></table>
+  </div>`;
+
+  // F. Tổng hợp theo từng tủ MSB
+  let fBody = '', totalAhf = 0;
+  msbList.forEach((msb, idx) => {
+    const M = msb.id;
+    const ahf = cell('r_ahf_' + M);
+    totalAhf += parseFloat(ahf) || 0;
+    fBody += `<tr><td class="rpt-center">${idx + 1}</td><td>${esc(msb.name)}</td>`
+      + `<td class="rpt-center">${cell('r_mainCB_' + M)}</td>`
+      + `<td class="rpt-center">${esc(String(msb.isc || ''))}</td>`
+      + `<td class="rpt-center">${cell('r_iscil_' + M)}</td>`
+      + `<td class="rpt-center">${cell('r_tdd_' + M)}</td>`
+      + `<td class="rpt-center">${limF(M)}</td>`
+      + `<td class="rpt-center">${ahf}</td></tr>`;
+  });
+  const fTable = `<div class="table-wrapper"><table><thead><tr><th>${tr('STT', 'No.')}</th><th>${tr('Vị trí', 'Location')}</th><th>${tr('In CB tổng', 'Main CB In')}<br>(A)</th><th>${tr('Dòng ngắn mạch', 'Short-circuit current')}<br>(kA)</th><th>Isc/IL</th><th>${tr('%TDD<br>tính toán', 'Calculated<br>%TDD')}</th><th>${tr('Giới hạn TDD', 'TDD limit')}<br>(${stdLabel(RL)})</th><th>${tr('Công suất AHF<br>đề xuất (A)', 'Proposed AHF<br>capacity (A)')}</th></tr></thead><tbody>${fBody}<tr class="rpt-total"><td colspan="7" style="text-align:right;">${tr('TỔNG CỘNG', 'TOTAL')}</td><td class="rpt-center">${totalAhf || '—'}</td></tr></tbody></table></div>`;
+
+  // G. Chi tiết theo từng tủ MSB
+  // Chuẩn bị dữ liệu từng tủ; bảng được dựng theo trang để gộp ô tên tủ và lặp lại tên tủ khi sang trang
+  const colgroupG = `<colgroup>
+      <col style="width:5%"><col style="width:10%"><col style="width:10%"><col style="width:12%"><col style="width:16%">
+      <col style="width:8%"><col style="width:10%"><col style="width:7%"><col style="width:12%"><col style="width:10%">
+      </colgroup>`;
+  const pfCheckedG = document.querySelector('#funcCheckboxes input[value="pf"]')?.checked;
+  const gData = msbList.map(msb => {
+    const M = msb.id;
+    const imaxPct = (msbCalc[M] && msbCalc[M].imaxPct != null) ? msbCalc[M].imaxPct : (parseFloat(msb.imaxPct) || 80);
+    const resPct = (msbCalc[M] && msbCalc[M].resPct != null) ? msbCalc[M].resPct : 20;
+    const rows = msb.loads.map((load, li) => {
+      const L = load.id;
+      const lt = LOAD_TYPES[load.loadType];
+      const typeName = lt ? lt[RL] : '';
+      return {
+        stt: `<td class="rpt-center">${li + 1}</td>`,
+        rest: `<td>${esc(load.loadName || '')}</td>`
+          + `<td>${esc(load.deviceName || '')}</td>`
+          + `<td>${esc(typeName)}</td>`
+          + `<td class="rpt-center">${esc(String(load.cbRating || ''))}</td>`
+          + `<td class="rpt-center">${cell('c_imax_' + M + '_' + L)}</td>`
+          + `<td class="rpt-center" style="white-space:nowrap;">${cell('c_thdi_' + M + '_' + L)}</td>`
+          + `<td class="rpt-center">${cell('c_ref_' + M + '_' + L)}</td>`
+          + `<td class="rpt-num">${cell('c_harm_' + M + '_' + L)}</td>`,
+      };
+    });
+    const sum = [
+      [tr('Tổng dòng điện hài lớn nhất [ΣIhài] (A)', 'Total max harmonic current [ΣIharm] (A)'), cell('r_totHarm_' + M)],
+      [tr('Tổng dòng tải lớn nhất [IL] (A)', 'Total max load current [IL] (A)'), cell('r_totLoad_' + M)],
+      [tr('Dòng định mức ACB/MCCB tổng [In] (A)', 'Main ACB/MCCB rated current [In] (A)'), cell('r_mainCB_' + M)],
+      [tr('Mức hài thực tế có thể có (A)', 'Possible actual harmonic level (A)'), cell('r_adjHarm_' + M) || cell('r_totHarm_' + M)],
+      [tr('%TDD thực tế', 'Actual %TDD'), cell('r_tdd_' + M)],
+      ...((ieeeR || !ttR) ? [[tr('%TDD yêu cầu (IEEE-519)', 'Required %TDD (IEEE-519)'), cell('r_tddlim_' + M)]] : []),
+      ...(ttR ? [[tr('Công suất phụ tải ước tính (kW) [P = √3·U·IL·0.9]', 'Estimated load power (kW) [P = √3·U·IL·0.9]'), cell('r_loadkw_' + M)], [tr('%TDD yêu cầu (TT 05/2025-BCT)', 'Required %TDD (Circular 05/2025/TT-BCT)'), cell('r_tddlimTT_' + M)]] : []),
+      [tr('% Sóng hài cần loại bỏ để đạt ', '% Harmonic to remove for ') + stdLabel(RL), cell('r_hpct_' + M)],
+      [tr('Dòng hài cần loại bỏ (A)', 'Harmonic current to remove (A)'), cell('r_hamp_' + M)],
+    ];
+    // Chỉ hiện 2 dòng tụ bù khi đã chọn chức năng Điều chỉnh hệ số P.F
+    if (pfCheckedG) {
+      sum.push([tr('Công suất tụ bù (kVAr) – nhập thực tế', 'Capacitor bank power (kVAr) – actual'), cell('r_capkvar_' + M)]);
+      sum.push([tr('Dòng điện tụ bù (A) [= kVAr / (√3 × U)]', 'Capacitor bank current (A) [= kVAr / (√3 × U)]'), cell('r_capcurr_' + M)]);
+    }
+    sum.push([tr('Công suất AHF khuyến cáo (A)', 'Recommended AHF capacity (A)') + (pfCheckedG ? tr(' [√(I²_hài + I²_tụbù)]', ' [√(I²_harm + I²_cap)]') : ''), cell('r_ahfraw_' + M)]);
+    sum.push([tr(`Dự phòng ${resPct}%`, `Reserve ${resPct}%`), cell('r_ahfres_' + M)]);
+    const sumHtml = sum.map(([k, v]) => `<tr><td colspan="9" class="rpt-sumlabel">${k}</td><td class="rpt-num">${v || '—'}</td></tr>`).join('')
+      + `<tr class="rpt-final"><td colspan="9" style="text-align:right;">${tr('Công suất AHF đề xuất (A) – làm tròn', 'Proposed AHF capacity (A) – rounded')}</td><td class="rpt-center">${cell('r_ahf_' + M)}</td></tr>`;
+    const headHtml = `<thead><tr>`
+      + `<th>${tr('STT', 'No.')}</th><th>${tr('Tên tủ MSB', 'MSB panel')}</th><th>${tr('Tên tủ điện /<br>Thiết bị', 'Panel /<br>Equipment')}</th><th>${tr('Loại thiết bị', 'Equipment type')}</th><th>${tr('Loại tải', 'Load type')}</th>`
+      + `<th>CB Trip Rating<br>(A)</th><th>I_max (A)<br>(${imaxPct}% Trip Rating)</th><th>TDD%</th><th>${tr('Tiêu chuẩn<br>tham chiếu', 'Reference<br>standard')}</th><th>${tr('Dòng điện hài<br>(A)', 'Harmonic current<br>(A)')}</th>`
+      + `</tr></thead>`;
+    return { name: msb.name, rows, sumHtml, headHtml };
+  });
+
+  // Dựng 1 bảng của 1 tủ: ô tên tủ gộp (rowspan) cho các dòng tải trong bảng
+  const gTable = (d, rows, withSum, breakBefore, noGap) => {
+    let body = '';
+    if (d.rows.length === 0) {
+      body = `<tbody><tr><td class="rpt-center">—</td><td class="rpt-msbname">${esc(d.name)}</td><td colspan="8" class="rpt-center">${tr('(chưa có tải)', '(no loads)')}</td></tr></tbody>`;
+    } else if (rows.length) {
+      body = '<tbody>' + rows.map((r, i) => `<tr class="g-row">${r.stt}`
+        + (i === 0 ? `<td class="rpt-msbname" rowspan="${rows.length}">${esc(d.name)}</td>` : '')
+        + `${r.rest}</tr>`).join('') + '</tbody>';
+    }
+    const sumPart = withSum ? `<tbody class="rpt-sum">${d.sumHtml}</tbody>` : '';
+    return `<div class="rpt-block${breakBefore ? ' rpt-pagebreak' : ''}"${noGap ? ' style="margin-bottom:0"' : ''}>`
+      + `<table>${colgroupG}${d.headHtml}${body}${sumPart}</table></div>`;
+  };
+
+  const renderHtml = (gBlocks, gHeadBreak) => `
+    ${printFixStyle}
+    <div class="rpt-title">${tr('BẢNG TÍNH TOÁN SÓNG HÀI VÀ ĐỀ XUẤT CÔNG SUẤT<br>BỘ LỌC HÀI CHỦ ĐỘNG (AHF) CHO HỆ THỐNG ĐIỆN', 'HARMONIC CALCULATION AND CAPACITY PROPOSAL<br>OF ACTIVE HARMONIC FILTER (AHF) FOR POWER SYSTEM')}</div>
+    <div class="rpt-keep"><div class="rpt-sec">${tr('A. THÔNG TIN DỰ ÁN', 'A. PROJECT INFORMATION')}</div>
+    <table class="rpt-info"><tbody>${aRows}</tbody></table></div>
+    <div class="rpt-keep"><div class="rpt-sec">${tr('B. TIÊU CHUẨN ÁP DỤNG', 'B. APPLICABLE STANDARDS')}</div>
+    <table class="rpt-std"><tbody>${bRows}</tbody></table></div>
+    <div class="rpt-keep"><div class="rpt-sec rpt-sec-full">${tr('C. GIẢ ĐỊNH TÍNH TOÁN', 'C. CALCULATION ASSUMPTIONS')}</div>
+    <ol class="rpt-assum">${assumItems}</ol></div>
+    <div class="rpt-keep"><div class="rpt-sec">${tr('D. BẢNG THAM CHIẾU IEEE-519 (120V – 69kV)', 'D. IEEE-519 REFERENCE TABLE (120V – 69kV)')}</div>
+    ${dTable}</div>
+    <div class="rpt-keep"><div class="rpt-sec">${tr('E. BẢNG THAM CHIẾU TT 05/2025-BCT', 'E. CIRCULAR 05/2025/TT-BCT REFERENCE TABLE')}</div>
+    ${eTable}</div>
+    <div class="rpt-sec">${tr('F. TỔNG HỢP THÔNG TIN SÓNG HÀI VÀ CÔNG SUẤT BỘ LỌC HÀI', 'F. HARMONIC SUMMARY AND HARMONIC FILTER CAPACITY')}</div>
+    ${fTable}
+    <div class="rpt-sec${gHeadBreak ? ' rpt-pagebreak' : ''}" id="rptSecG">${tr('G. BẢNG TÍNH TOÁN CHI TIẾT SÓNG HÀI', 'G. DETAILED HARMONIC CALCULATION')}</div>
+    ${gBlocks}
+  `;
+
+  // Bước 1: dựng tạm và đo chiều cao thực tế ở khổ in (A4, lề trái/phải 10mm)
+  const view = document.getElementById('reportView');
+  const hadMode = document.body.classList.contains('report-mode');
+  document.body.classList.add('report-mode');
+  view.style.cssText = 'width:190mm;max-width:none;padding:0 1px;margin:0;';
+  view.innerHTML = renderHtml(gData.map(d => gTable(d, d.rows, true, false, false)).join(''), false);
+
+  const PX_PER_MM = 96 / 25.4;
+  const PAGE_H = (297 - 10 - 14) * PX_PER_MM * 0.97; // chiều cao vùng in (trừ lề trên/dưới), chừa 3% an toàn
+  const GAP = 10; // margin-bottom của .rpt-block
+  const hOf = el => el ? el.getBoundingClientRect().height : 0;
+  const kids = [...view.children].filter(el => el.tagName !== 'STYLE');
+  const tops = kids.map(el => el.getBoundingClientRect().top);
+  const spanH = i => (i + 1 < kids.length ? tops[i + 1] : kids[i].getBoundingClientRect().bottom) - tops[i];
+  const gIdx = kids.findIndex(el => el.id === 'rptSecG');
+
+  // Mô phỏng ngắt trang cho các mục A–F (tiêu đề mục luôn đi liền nội dung bên dưới)
+  let y = 0;
+  for (let i = 0; i < gIdx; i++) {
+    let hh = spanH(i);
+    if (kids[i].classList.contains('rpt-sec') && i + 1 < gIdx) { hh += spanH(i + 1); i++; }
+    if (y > 0 && y + hh > PAGE_H) y = 0;
+    y += hh;
+    while (y > PAGE_H) y -= PAGE_H;
+  }
+
+  // Bước 2: chia bảng từng tủ theo trang
+  const blocks = [...view.querySelectorAll('.rpt-block')];
+  const gHeadH = spanH(gIdx);
+  const b0 = blocks[0];
+  const need0 = b0 ? hOf(b0.querySelector('thead')) + (hOf(b0.querySelector('tr.g-row')) || hOf(b0)) : 0;
+  let gHeadBreak = false;
+  if (y > 0 && y + gHeadH + need0 > PAGE_H) { gHeadBreak = true; y = 0; }
+  y += gHeadH;
+
+  let gBlocks = '';
+  gData.forEach((d, bi) => {
+    const blk = blocks[bi];
+    const theadH = hOf(blk.querySelector('thead'));
+    if (d.rows.length === 0) {
+      const hh = hOf(blk);
+      const brk = y > 0 && y + hh > PAGE_H;
+      if (brk) y = 0;
+      y += hh + GAP;
+      gBlocks += gTable(d, [], true, brk, false);
+      return;
+    }
+    const rowH = [...blk.querySelectorAll('tr.g-row')].map(hOf);
+    const sumH = hOf(blk.querySelector('tbody.rpt-sum'));
+    let chunk = [];
+    let chunkBreak = false;
+    // Bắt đầu tủ: cần đủ chỗ cho tiêu đề cột + dòng tải đầu tiên
+    if (y > 0 && y + theadH + rowH[0] > PAGE_H) { chunkBreak = true; y = 0; }
+    y += theadH;
+    d.rows.forEach((r, i) => {
+      if (chunk.length && y + rowH[i] > PAGE_H) {
+        gBlocks += gTable(d, chunk, false, chunkBreak, true);
+        chunk = []; chunkBreak = true; y = theadH; // trang mới: tiêu đề cột + ô tên tủ lặp lại
+      }
+      chunk.push(r);
+      y += rowH[i];
+    });
+    if (y + sumH > PAGE_H) {
+      // Khối tổng kết không vừa: giữ nguyên khối, chuyển sang trang sau kèm tiêu đề cột
+      gBlocks += gTable(d, chunk, false, chunkBreak, true);
+      gBlocks += gTable(d, [], true, true, false);
+      y = theadH + sumH;
+    } else {
+      gBlocks += gTable(d, chunk, true, chunkBreak, false);
+      y += sumH;
+    }
+    y += GAP;
+  });
+
+  // Bước 3: dựng bản chính thức
+  view.style.cssText = '';
+  view.innerHTML = renderHtml(gBlocks, gHeadBreak);
+  if (!hadMode) document.body.classList.remove('report-mode');
+}
+
+// ===== KHỞI TẠO KHI TẢI TRANG =====
+function init() {
+  // Lấy lại ngôn ngữ đã chọn lần trước (nếu có), mặc định tiếng Việt
+  let saved = null;
+  try { saved = localStorage.getItem('ahfLang'); } catch (e) {}
+  setLang(saved === 'en' ? 'en' : 'vi');
+  if (msbList.length === 0) addMSB({name:'MSB Tổng', voltage:400});
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>
+
